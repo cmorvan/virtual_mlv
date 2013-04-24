@@ -1,0 +1,15 @@
+This software is a very simple implementation of a virtual (single
+stack) machine.
+
+It has been developpped at université de Marne la Vallée, by Sylvain
+Lombardy. Afertwards, it has been modified by Nicolas Bedon and
+Christophe Morvan.
+
+Currently this software is maintained by Christophe Morvan.
+
+http://www-igm.univ-mlv.fr/~cmorvan/index.php
+
+Most of the comments and documentation are written in French, and are
+intended for computer science students at université de Marne la
+Vallée. These software and documentation are provided under General
+Public Licence v3 (see COPYING). 
