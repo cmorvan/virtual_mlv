@@ -3,7 +3,8 @@ stack) machine.
 
 It has been developpped at université de Marne la Vallée, by Sylvain
 Lombardy. Afertwards, it has been modified by Nicolas Bedon and
-Christophe Morvan.
+Christophe Morvan. Gaël Fuhs has contributed a nice implementation of a 
+dynamic array, in order to remove the hard coded 100 label limit.
 
 Currently this software is maintained by Christophe Morvan.
 
