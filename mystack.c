@@ -16,7 +16,7 @@
  * <http://www.gnu.org/licenses/>.
  *
  *
- *  Authors: S. Lombardy, N. Bedon, C. Morvan
+ *  Authors: S. Lombardy, N. Bedon, C. Morvan, G. Fuhs
  *
  *************************************************************************** */
 
@@ -53,6 +53,8 @@ int delete_a_stack(void){
   free(the_stack);
   the_stack=s;
   stack_depth--;
+  /* Correcting deletion bug */
+  occstack=STACK_SIZE;
   return 0;
 }
 
