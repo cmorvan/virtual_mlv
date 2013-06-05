@@ -16,7 +16,7 @@
  * <http://www.gnu.org/licenses/>.
  *
  *
- *  Authors: S. Lombardy, N. Bedon, C. Morvan
+ *  Authors: S. Lombardy, N. Bedon, C. Morvan, G. Fuhs
  *
  *************************************************************************** */
 
@@ -24,31 +24,35 @@
 #include<stdlib.h>
 #include<stdio.h>
 #include"actions.h"
-   int yylval ;
-    int yylex( );
-    int yyerror(char*);
-    extern FILE *yyin;
+#include "dynArray.h"
+  int yylval ;
+  int yylex( );
+  int yyerror(char*);
+  extern FILE *yyin;
 
-typedef struct INST{
-  int com;
-  int arg;
-  int has_arg;
-  struct INST* next_inst;
-} inst;
+  typedef struct INST{
+    int com;
+    int arg;
+    int has_arg;
+    struct INST* next_inst;
+  } inst;
+  
+  inst* new_inst(inst* old){
+    inst* l=(inst*)malloc(sizeof(inst));
+    l->next_inst=old;
+    return l;
+  }
 
-inst* new_inst(inst* old){
-  inst* l=(inst*)malloc(sizeof(inst));
-  l->next_inst=old;
-  return l;
-}
+  // Labels are not stored in a array anymore, but in a dynamic array.
+  //int labels[100];
+  dynArray labels={NULL,0};
 
-int labels[100];
-int prognum=0;
-int *prog;
-int prog_length;
-inst* list=NULL;
-
-%}
+  int prognum=0;
+  int *prog;
+  int prog_length;
+  inst* list=NULL;
+  
+  %}
 
 
 %token NUM COM1 COM2 LBL
@@ -69,7 +73,10 @@ ligne : EOL {}
 		     list->arg=$2;
 		     list->has_arg=1;
                      prognum+=2;}
-      | LBL NUM EOL {labels[$2]=prognum;}
+       | LBL NUM EOL {/* labels[$2]=prognum;*/
+	 /* Dynamic array */
+	 addValue(&labels, $2 ,prognum);
+ }
 %%
 
 int yyerror(char *msg) {
@@ -90,8 +97,10 @@ int loadprog(char* src){
   i=prog_length;
   while(list!=NULL){
     if(list->has_arg==1){
-      if(list->com==VM_CALL || list->com==VM_JUMP || list->com==VM_JUMPF)
-	prog[--i]=labels[list->arg];
+      if(list->com==VM_CALL || list->com==VM_JUMP || list->com==VM_JUMPF){
+	/* prog[--i]=labels[list->arg];*/
+	prog[--i]=getValue(&labels, list->arg);
+      }
       else
 	prog[--i]=list->arg;
     }
@@ -100,6 +109,8 @@ int loadprog(char* src){
     list=list->next_inst;
     free(l);
   }
+  /* Dynamic array */
+  freeArray(&labels);
   return 0;
 }
 
