@@ -1,0 +1,21 @@
+/* ***************************************************************************
+ *	tabDynamic.c
+ * 
+ * Ce fichier contient des fonctions qui permettent d'ajouter des entiers stictement
+ * positif dans un tableau de int alloué dynamiquement via la fonction addTab.
+ * On peut lire le contenue de chaque case du tableau en utilisant la méthode
+ * getValue qui renvoie la valeur lu et -1 en cas d'erreur.
+ * Pour effacer le tableau, on utilise la méthode freeTabDynamic
+ * 
+ * Auteur : Fuhs Gaël
+ *
+ *************************************************************************** */
+
+#ifndef TABDYNAMIC_H
+#define TABDYNAMIC_H
+
+void addTab(int ,int );
+int getValue(int);
+void freeTabDynamic();
+
+#endif
