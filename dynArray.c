@@ -17,7 +17,7 @@
  * <http://www.gnu.org/licenses/>.
  *
  *
- *  Author: G. Fuhs, C. Morvan
+ *  Author: G. Fuhs, W. Hay, C. Morvan
  *
  *************************************************************************** */
 
@@ -38,16 +38,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "dynArray.h"
-
-/*
- int* tabDynamic = NULL;
- int sizeMax=0;
- typedef struct struct_dynArray{
- int* dynArray;
- int size;
-  }dynArray;
-
-*/
 
 dynArray newDynArray(){
   dynArray newArray;
@@ -83,9 +73,7 @@ void addValue(dynArray * array, int key ,int value )
 
 int getValue(dynArray * array,int key)
 {
-	if(key > array->size)
-		return -1;
-	return array->dynArray[key];
+  return (key < 0 || key >= array->size) ? -1 : array->dynArray[key];
 }
 
 void freeArray(dynArray * array)

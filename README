@@ -1,10 +1,12 @@
 This software is a very simple implementation of a virtual (single
 stack) machine.
 
-It has been developpped at université de Marne la Vallée, by Sylvain
+It has been developed at université de Marne la Vallée, by Sylvain
 Lombardy. Afertwards, it has been modified by Nicolas Bedon and
-Christophe Morvan. Gaël Fuhs has contributed a nice implementation of a 
-dynamic array, in order to remove the hard coded 100 label limit.
+Christophe Morvan. Gaël Fuhs has contributed a nice implementation of
+a dynamic array, in order to remove the hard coded 100 label
+limit. Further Wuthy Hay has perform some improvements on some pieces
+of code (relative to dynamix arrays).
 
 Currently this software is maintained by Christophe Morvan.
 

@@ -17,14 +17,14 @@
  * <http://www.gnu.org/licenses/>.
  *
  *
- *  Author: G. Fuhs, C. Morvan
+ *  Author: G. Fuhs, W. Hay, C. Morvan
  *
  *************************************************************************** */
 
 /* ***************************************************************************
  *	dynArray.h
  * 
- * This file contains functions enabeling to allocate strictly
+ * This file contains functions enabling to allocate strictly
  * positive integers into a dynamically allocated array.
  *
  * newDynArray: creation
