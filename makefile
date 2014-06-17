@@ -15,47 +15,37 @@
 ### <http://www.gnu.org/licenses/>.
 ###
 ###
-###  Authors: S. Lombardy, N. Bedon, C. Morvan, G. Fuhs
-###
-### This makefile is intended for amd64 machines.
-### Otherwise only 686 binaries may be generated.
-###
-### all -> produces amd64 binary
-### all32 -> produces 32 bits (686) binary
+### Authors: S. Lombardy, N. Bedon, C. Morvan, G. Fuhs, W. Hay
 ###
 
-CC=gcc
-FLAGS32=-m32
-CFLAGS=-Wall
-EXEC=vm
-EXEC64=vmAMD64
-EXEC32=vm686
-EXLOAD=loadprog
-LOC_LIBS=dynArray
+CC = gcc
+LEXER = flex
+PARSER = bison
+CFLAGS = -Wall -ansi -pedantic
+EXEC = vm
 
-all: $(EXEC64) clean
+HAS_CLANG = $(shell which clang > /dev/null 2>&1; echo $$?)
+CLANG = # Used to check doxygen comments consistency.
 
-all32: $(EXEC32) clean
+ifeq ($(HAS_CLANG), 0) # 0 is fine, it's the shell exit code upon success.
+    CLANG = clang -Wdocumentation -fsyntax-only *.c *.h
+endif
 
-$(EXEC64): $(EXEC).o $(EXLOAD).o $(LOC_LIBS).o  lex.yy.o mystack.o
-	gcc  -o $@ $^ $(CFLAGS)
+all: $(EXEC) clean
 
-$(EXEC32): $(EXEC).o32 $(EXLOAD).o32 $(LOC_LIBS).o32  lex.yy.o32 mystack.o32
-	gcc   $(FLAGS32) -o $@ $^ $(CFLAGS)
+$(EXEC): main.o vm.o loadprog.o array.o lex.yy.o mystack.o
+	$(CC) $(CFLAGS) -o $@ $^
 
-$(EXLOAD).c: $(EXLOAD).y
-	bison -d -o $(EXLOAD).c $(EXLOAD).y
+loadprog.c: loadprog.y
+	$(PARSER) -d -o loadprog.c loadprog.y
 
-$(EXLOAD).h: $(EXLOAD).c
+loadprog.h: loadprog.c
 
-lex.yy.c: $(EXLOAD).lex $(EXLOAD).h
-	flex $(EXLOAD).lex
+lex.yy.c: loadprog.lex loadprog.h
+	$(LEXER) loadprog.lex
 
 %.o: %.c
-	gcc -o $@ -c $< $(CFLAGS)
-
-%.o32: %.c
-	gcc $(FLAGS32) -o $@ -c $< $(CFLAGS)
+	$(CC) $(CFLAGS) -o $@ -c $<
 
 clean:
-	rm -f *.o *.o32 lex.yy.c $(EXLOAD).[ch]
+	rm -f *.o lex.yy.c loadprog.[ch]
