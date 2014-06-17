@@ -16,102 +16,105 @@
  * <http://www.gnu.org/licenses/>.
  *
  *
- *  Authors: S. Lombardy, N. Bedon, C. Morvan, G. Fuhs
+ *  Authors: S. Lombardy, N. Bedon, C. Morvan, G. Fuhs, W. Hay
  *
  *************************************************************************** */
 
 %{
-#include<stdlib.h>
-#include<stdio.h>
-#include"actions.h"
-#include "dynArray.h"
-  int yylval ;
-  int yylex( );
-  int yyerror(char*);
-  extern FILE *yyin;
+#include <stdio.h>
+#include <stdlib.h>
+#include "opcode.h"
+#include "array.h"
 
-  typedef struct INST{
-    int com;
+int yylval;
+int yylex(void);
+int yyerror(const char *);
+extern FILE *yyin;
+
+typedef struct Instruction Instruction;
+struct Instruction {
+    Opcode opcode;
     int arg;
     int has_arg;
-    struct INST* next_inst;
-  } inst;
-  
-  inst* new_inst(inst* old){
-    inst* l=(inst*)malloc(sizeof(inst));
-    l->next_inst=old;
-    return l;
-  }
+    Instruction *next_instruction;
+};
 
-  // Labels are not stored in a array anymore, but in a dynamic array.
-  //int labels[100];
-  dynArray labels={NULL,0};
+Instruction *new_inst(Instruction *old) {
+    Instruction *inst = malloc(sizeof(*inst));
+    inst->next_instruction = old;
+    return inst;
+}
 
-  int prognum=0;
-  int *prog;
-  int prog_length;
-  inst* list=NULL;
-  
-  %}
+/* Labels are not stored in a standard array anymore, but in a dynamic array. */
+Array *labels = NULL;
 
+int prognum = 0;
+Opcode *prog;
+int prog_length;
+Instruction *instructions = NULL;
+
+%}
 
 %token NUM COM1 COM2 LBL
 %token EOL
-%start entree
+%start input
 
 %%
-entree : ligne entree {}
-       | {return 0;}
 
-ligne : EOL {}
-|	COM1 EOL {list=new_inst(list); 
-                  list->com=$1;
-		  list->has_arg=0;
-                  prognum++;}
-      | COM2 NUM EOL {list=new_inst(list);
-		     list->com=$1; 
-		     list->arg=$2;
-		     list->has_arg=1;
-                     prognum+=2;}
-       | LBL NUM EOL {/* labels[$2]=prognum;*/
-	 /* Dynamic array */
-	 addValue(&labels, $2 ,prognum);
- }
+input : line input {}
+      | {return 0;}
+
+line : EOL {}
+     | COM1 EOL { instructions = new_inst(instructions);
+                  instructions->opcode = $1;
+		          instructions->has_arg = 0;
+                  prognum++;
+     }
+     | COM2 NUM EOL { instructions = new_inst(instructions);
+                      instructions->opcode = $1;
+                      instructions->arg = $2;
+                      instructions->has_arg = 1;
+                      prognum += 2;
+     }
+     | LBL NUM EOL { add_value_at_index(labels, prognum, $2); }
+
 %%
 
-int yyerror(char *msg) {
-  fprintf(stderr,"\n%s\n", msg);
-  return 0;
+int yyerror(const char *msg) {
+    fprintf(stderr, "\n%s\n", msg);
+    return 0;
 }
 
-int loadprog(char* src){
-  inst *l;
-  int i;
-  yyin=fopen(src,"r");
-  yyparse();
-  /* Global variable : prog_length (from vm.c) */
-  prog_length=prognum;
-  l=list;
-  /* Global variable : prog (from vm.c) */
-  prog=(int*)malloc(sizeof(int)*prog_length);
-  i=prog_length;
-  while(list!=NULL){
-    if(list->has_arg==1){
-      if(list->com==VM_CALL || list->com==VM_JUMP || list->com==VM_JUMPF){
-	/* prog[--i]=labels[list->arg];*/
-	prog[--i]=getValue(&labels, list->arg);
-      }
-      else
-	prog[--i]=list->arg;
+int loadprog(char *src) {
+    Instruction *inst_list;
+    int i;
+    labels = new_array();
+    yyin = fopen(src, "r");
+    yyparse();
+    /* Global variable : prog_length (from vm.c) */
+    prog_length = prognum;
+    inst_list = instructions;
+    /* Global variable : prog (from vm.c) */
+    prog = malloc(prog_length * sizeof(*prog));
+    i = prog_length;
+    while (instructions != NULL) {
+        if (instructions->has_arg) {
+            if (instructions->opcode == VM_CALL
+                    || instructions->opcode == VM_JUMP
+                    || instructions->opcode == VM_JUMPF) {
+                prog[--i] = get_value_at_index(labels, instructions->arg);
+            }
+            else {
+                prog[--i] = instructions->arg;
+            }
+        }
+        prog[--i] = instructions->opcode;
+        inst_list = instructions;
+        instructions = instructions->next_instruction;
+        free(inst_list);
     }
-    prog[--i]=list->com;
-    l=list;
-    list=list->next_inst;
-    free(l);
-  }
-  /* Dynamic array */
-  freeArray(&labels);
-  return 0;
+    free_array(labels);
+    return 0;
 }
 
 	
