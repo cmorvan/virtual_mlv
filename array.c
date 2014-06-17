@@ -58,22 +58,22 @@ Array *new_array(void) {
  * @param index The desired position in the array for the value to be added.
  */
 void add_value_at_index(Array *array, int value, int index) {
-	int *tmp;
+    int *tmp;
     
     if (index < 0) {
         return;
     }
-	while (index > array->size) {
+    while (index > array->size) {
         array->size *= 2;
-		tmp = realloc(array->values, array->size * sizeof(*array->values));
+        tmp = realloc(array->values, array->size * sizeof(*array->values));
         if (!tmp) {
             free(array->values);
-			perror("realloc");
-			exit(EXIT_FAILURE);
-		}
-		array->values = tmp;
-	}
-	array->values[index] = value;
+            perror("realloc");
+            exit(EXIT_FAILURE);
+        }
+        array->values = tmp;
+    }
+    array->values[index] = value;
 }
 
 /**
@@ -89,6 +89,6 @@ int get_value_at_index(const Array *array, int index) {
  * @param array The array to be freed.
  */
 void free_array(Array *array) {
-	free(array->values);
+    free(array->values);
     free(array);
 }
