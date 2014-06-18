@@ -207,8 +207,9 @@ Exemple de code accepté par la machine virtuelle:
         POP             #reg1 := 12 
         LOW             #reg1 := 12<5
         JUMPF   2       #goto 2 si reg1=0
-        SET     12
-        WRITE           #---affichage 12
+        SET     97
+        WRITE           #---affichage 97
+        WRITECH         #---affichage a
         LABEL   2
         HALT
 \end{verbatim}
