@@ -1,53 +1,53 @@
 #      Commande Arg
-        SET     4       #reg1 := 4
-        PUSH            #push 4
-        SET     8       #reg1 := 8
-        SWAP            #reg2 := 8
-        POP             #reg1 := 4
-        LOW             #reg1 := 4<8
-        JUMPF   0       #goto 0 si reg1=0
-        SET     3       #reg1 := 3
-        PUSH            #push 3
-        SET     5       #reg1 := 5
-	WRITE
-        SWAP            #reg2 := 5
-        POP             #reg1 := 3
-        LOW             #reg1 := 3<5
-        JUMPF   1       #goto 1 si reg1=0
-        SET     4       #reg1 := 4
-        PUSH            #push 4
-        SET     70      #reg1 := 70
-        SWAP            #reg2 := 70
-        POP             #reg1 := 4
-        ADD             #reg1 := 4+70
-        WRITE           #---affichage 74
-	CALL 3
-	SET 33
-	WRITE
-        LABEL   0
-        LABEL   1
-        SET     12      #reg1 := 12
-        PUSH            #push 12
-        SET     5       #reg1 := 5
-        SWAP            #reg2 := 5
-        POP             #reg1 := 12 
-	SWAP
-	SET 8
-        LOW             #reg1 := 8<12
-        JUMPF   2       #goto 2 si reg1=0
-        SET     122
-        WRITE           #---affichage 122
-	READ
-	WRITE
-	READCH  #--- Lecture d'un caractere
-	WRITECH  #--- Affichage d'un caractere
-	READCH  #--- Lecture d'un caractere
-	WRITECH  #--- Affichage d'un caractere
-	SET 33
-	WRITE
-        LABEL   2
-        HALT
-	LABEL 3
-	SET 55
-	WRITE
-	RETURN
+    SET     4       #reg1 := 4
+    PUSH            #push 4
+    SET     8       #reg1 := 8
+    SWAP            #reg2 := 8
+    POP             #reg1 := 4
+    LESS            #reg1 := 4 < 8
+    JUMPF   0       #goto 0 si reg1 = 0
+    SET     3       #reg1 := 3
+    PUSH            #push 3
+    SET     5       #reg1 := 5
+    WRITE
+    SWAP            #reg2 := 5
+    POP             #reg1 := 3
+    LESS            #reg1 := 3<5
+    JUMPF   1       #goto 1 si reg1=0
+    SET     4       #reg1 := 4
+    PUSH            #push 4
+    SET     70      #reg1 := 70
+    SWAP            #reg2 := 70
+    POP             #reg1 := 4
+    ADD             #reg1 := 4 + 70
+    WRITE           #---affichage 74
+    CALL    3
+    SET     33
+    WRITE
+    LABEL   0
+    LABEL   1
+    SET     12      #reg1 := 12
+    PUSH            #push 12
+    SET     5       #reg1 := 5
+    SWAP            #reg2 := 5
+    POP             #reg1 := 12 
+    SWAP
+    SET     8
+    LESS            #reg1 := 8 < 12
+    JUMPF   2       #goto 2 si reg1 = 0
+    SET     122
+    WRITE           #---affichage 122
+    READ
+    WRITE
+    READCH          #--- Lecture d'un caractere
+    WRITECH         #--- Affichage d'un caractere
+    READCH          #--- Lecture d'un caractere
+    WRITECH         #--- Affichage d'un caractere
+    SET     33
+    WRITE
+    LABEL   2
+    HALT
+    LABEL   3
+    SET     55
+    WRITE
+    RETURN
