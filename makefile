@@ -25,13 +25,18 @@ CFLAGS = -Wall -ansi -pedantic
 EXEC = vm
 
 HAS_CLANG = $(shell which clang > /dev/null 2>&1; echo $$?)
-CLANG = # Used to check doxygen comments consistency.
+DOXYCHECK = # Used to check doxygen comments consistency.
 
 ifeq ($(HAS_CLANG), 0) # 0 is fine, it's the shell exit code upon success.
-    CLANG = clang -Wdocumentation -fsyntax-only *.c *.h
+    DOXYCHECK = clang -Wdocumentation -fsyntax-only *.c *.h
+else
+    DOXYCHECK = @echo "It seems that you don't have `clang', doxycheck aborted."
 endif
 
-all: $(EXEC) clean
+all: $(EXEC) clean doxycheck
+
+doxycheck:
+	$(DOXYCHECK)
 
 $(EXEC): main.o vm.o loadprog.o array.o lex.yy.o mystack.o
 	$(CC) $(CFLAGS) -o $@ $^
