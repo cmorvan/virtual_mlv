@@ -24,14 +24,14 @@
 #include "array.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
+#include <string.h>
 
 /** The default size for a new array. */
-#define DEFAULT_SIZE 128
+static const size_t DEFAULT_SIZE = 128;
 
 /**
- * Allocates enough memory space for an array.
- * @return The newly allocated array.
+ * Allocates enough memory space for a dynamic array.
+ * @return The newly allocated dynamic array or NULL if an error occurs.
  */
 Array *new_array(void) {
     Array *array;
@@ -39,29 +39,36 @@ Array *new_array(void) {
     array = malloc(sizeof(*array));
     if (!array) {
         perror("malloc");
-        exit(EXIT_FAILURE);
+        return array;
     }
     array->size = DEFAULT_SIZE;
     array->values = calloc(array->size, sizeof(*array->values));
     if (!array->values) {
         free(array);
         perror("calloc");
-        exit(EXIT_FAILURE);
+        return NULL;
     }
     return array;
 }
 
 /**
- * Adds a value in the array at the given index.
+ * Adds a positive value in the array at the given index.
  * @param array The array in which the value is to be added.
  * @param value The value to be added to the array.
  * @param index The desired position in the array for the value to be added.
+ * @return 0 if the value was successfully added, otherwise 1.
  */
-void add_value_at_index(Array *array, int value, int index) {
+int add_value_at_index(Array *array, int value, int index) {
     int *tmp;
+    size_t old_size = array->size;
     
     if (index < 0) {
-        return;
+        fprintf(stderr, "Index out of bounds: %d\n", index);
+        return 1;
+    }
+    if (value < 0) {
+        fprintf(stderr, "Illegal value: a label cannot have negative value\n");
+        return 1;
     }
     while (index > array->size) {
         array->size *= 2;
@@ -69,11 +76,16 @@ void add_value_at_index(Array *array, int value, int index) {
         if (!tmp) {
             free(array->values);
             perror("realloc");
-            exit(EXIT_FAILURE);
+            return 1;
         }
         array->values = tmp;
     }
+    /* Zeroing memory space between the old size and the new one to be
+     consistent with our implementation of new_array() that uses calloc(). */
+    memset(array->values + old_size, 0,
+           (array->size - old_size) * sizeof(*array->values));
     array->values[index] = value;
+    return 0;
 }
 
 /**
