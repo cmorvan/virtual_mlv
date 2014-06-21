@@ -33,13 +33,14 @@ static int reg1;
 /** The second register. */
 static int reg2;
 
+/** The program counter. */
+static int prog_counter = 0;
+
+/** The base register. */
 int base = 0;
 
 /** The code itself. */
 Opcode *prog = NULL;
-
-/** The program counter. */
-int prog_counter = 0;
 
 /** The debug flag. */
 int debug = 0;
@@ -64,7 +65,7 @@ static int vm_save(void);
 static int vm_saver(void);
 static int vm_swap(void);
 static int vm_read(void);
-static int read_int(void);
+static int read_int(int *);
 static int vm_write(void);
 static int vm_readch(void);
 static int vm_writech(void);
@@ -213,7 +214,10 @@ static int vm_set(int n) {
     return 0;
 }
 
-/******************************************************************************/
+/**
+ * Loads the value at the stack address @p reg1 into @p reg1.
+ * @return 0 upon success or 1 if an error occurs.
+ */
 static int vm_load(void) {
     if (dirload(reg1, &reg1)) {
         fprintf(stderr, "LOAD: illegal stack access\n");
@@ -222,6 +226,10 @@ static int vm_load(void) {
     return 0;
 }
 
+/**
+ * Loads the value at the stack address @p reg1 + @p base into @p reg1.
+ * @return 0 upon success or 1 if an error occurs.
+ */
 static int vm_loadr(void) {
     if (dirload(reg1 + base, &reg1)) {
         fprintf(stderr, "LOADR: illegal stack access\n");
@@ -230,6 +238,10 @@ static int vm_loadr(void) {
     return 0;
 }
 
+/**
+ * Stores the value of @p reg1 at the stack address @p reg2.
+ * @return 0 upon success or 1 if an error occurs.
+ */
 static int vm_save(void) {
     if (dirsave(reg2, reg1)) {
         fprintf(stderr, "SAVE: illegal stack access\n");
@@ -238,6 +250,10 @@ static int vm_save(void) {
     return 0;
 }   
 
+/**
+ * Stores the value of @p reg1 at the stack address @p reg2 + @p base.
+ * @return 0 upon success or 1 if an error occurs.
+ */
 static int vm_saver(void) {
     if (dirsave(reg2 + base, reg1)) {
         fprintf(stderr, "SAVER: illegal stack access\n");
@@ -245,7 +261,6 @@ static int vm_saver(void) {
     }
     return 0;
 }
-/******************************************************************************/
 
 /**
  * Swaps values of @p reg1 and @p reg2.
@@ -260,24 +275,27 @@ static int vm_swap(void) {
 
 /**
  * Reads a number from the standard input and stores it into @p reg1.
- * @return Always 0.
+ * @return 0 upon success or 1 if an error occurs.
  */
 static int vm_read(void) {
     printf("<< ");
-    reg1 = read_int();
-    return 0;
+    return read_int(&reg1);
 }
 
 /**
- * Reads an integer from the standard input and returns it.
- * @return The integer read from the standard input.
+ * Reads an integer from the standard input.
+ * @param result The storage location of the integer to be read.
+ * @return 0 upon success or 1 if an error occurs.
  */
-static int read_int(void) {
+static int read_int(int *result) {
     long val;
     char *endptr;
     char str[BUFSIZ] = {0};
     
-    fgets(str, sizeof(str), stdin);
+    if (fgets(str, sizeof(str), stdin) == NULL) {
+        perror("fgets");
+        return 1;
+    }
     /* To distinguish success/failure after call. */
     errno = 0;
     val = strtol(str, &endptr, 10);
@@ -285,24 +303,27 @@ static int read_int(void) {
     if ((errno == ERANGE && (val == LONG_MAX || val == LONG_MIN))
             || (errno != 0 && val == 0)) {
         perror("strtol");
-        exit(EXIT_FAILURE);
+        return 1;
     }
     if (endptr == str) {
         fprintf(stderr, "Number format error: no digits were found\n");
-        exit(EXIT_FAILURE);
+        return 1;
+    }
+    /*
+     * This is not necessarily an error, but we do not want to accept anything
+     * after the number even if it is legal for strtol().
+     */
+    if (*endptr) {
+        fprintf(stderr, "Number format error: trailing characters detected\n");
+        return 1;
     }
     /* Check for possible overflow because the VM only uses int. */
     if (val < INT_MIN || val > INT_MAX) {
         fprintf(stderr, "Number format error: result out of an `int' range\n");
-        exit(EXIT_FAILURE);
+        return 1;
     }
-    /* This is not necessarily an error, but we do not want to accept anything
-     after the number even if it is legal for strtol. */
-    if (*endptr) {
-        fprintf(stderr, "Number format error: trailing characters detected\n");
-        exit(EXIT_FAILURE);
-    }
-    return (int) val;
+    *result = (int) val;
+    return 0;
 }
 
 /**
@@ -363,7 +384,9 @@ static int vm_jumpf(int n) {
 }
 
 /**
- *
+ * Saves the VM state and then jumps to the call label.
+ * @param n The call label to jump to.
+ * @return 0 upon success or 1 if the call label is out of bounds.
  */
 static int vm_call(int n) {
     if (push(prog_counter + 1)) {
@@ -379,7 +402,9 @@ static int vm_call(int n) {
 }
 
 /**
- *
+ * Pops off all previously pushed values and then restores @p base and
+ * @p prog_counter.
+ * @return 0 upon success or 1 if a @a pop fails.
  */
 static int vm_return(void) {
     while (stack_size() > base) {
@@ -500,16 +525,20 @@ int vm_execute(void) {
         case VM_ALLOC:      vm_alloc(prog[prog_counter++]); break;
         case VM_FREE:       vm_free(prog[prog_counter++]); break;
                 
-        /* These values cannot be loaded into our program nor be really matched.
-         However, they need to remain within the switch for two reasons.
-         Firstly because the compiler does not accept unmatched enum values and
-         secondly because once these two values are matched, the compiler can
-         warn us about real opcodes that are left unmatched. */
+        /*
+         * These values cannot be loaded into our program nor be really matched.
+         * However, they need to remain within the switch for two reasons.
+         * Firstly because the compiler does not accept unmatched enum values
+         * and secondly because once these two values are matched, the compiler
+         * can warn us about real opcodes that are left unmatched.
+         */
         case VM_LABEL: case __VM_RESERVED:
             fprintf(stderr, "Fatal error: illegal opcode encountered\n");
             return 1;
-        /* No default case to let the compiler ensure that all opcodes values
-         are matched. */
+        /*
+         * No default case to let the compiler ensure that all opcodes values
+         * are matched.
+         */
         }
         if (debug) {
             display_stack();
