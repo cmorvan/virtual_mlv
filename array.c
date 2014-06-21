@@ -30,6 +30,14 @@
 static const size_t DEFAULT_SIZE = 128;
 
 /**
+ * A dynamic array which cannot be declared in the stack.
+ */
+struct Array {
+    int *values; /**< The values of the array. */
+    size_t size; /**< The size of the array. */
+};
+
+/**
  * Allocates enough memory space for a dynamic array.
  * @return The newly allocated dynamic array or NULL if an error occurs.
  */
@@ -67,7 +75,7 @@ int add_value_at_index(Array *array, int value, int index) {
         return 1;
     }
     if (value < 0) {
-        fprintf(stderr, "Illegal value: a label cannot have negative value\n");
+        fprintf(stderr, "Illegal value: a label cannot have a negative value\n");
         return 1;
     }
     while (index > array->size) {
@@ -80,8 +88,10 @@ int add_value_at_index(Array *array, int value, int index) {
         }
         array->values = tmp;
     }
-    /* Zeroing memory space between the old size and the new one to be
-     consistent with our implementation of new_array() that uses calloc(). */
+    /*
+     * Zeroing memory space between the old size and the new one to be
+     * consistent with our implementation of new_array() that uses calloc().
+     */
     memset(array->values + old_size, 0,
            (array->size - old_size) * sizeof(*array->values));
     array->values[index] = value;

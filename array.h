@@ -24,15 +24,7 @@
 #ifndef ARRAY_H
 #define ARRAY_H
 
-#include <stddef.h>
-
-/**
- * A dynamic array.
- */
-typedef struct Array {
-    int *values;
-    size_t size;
-} Array;
+typedef struct Array Array;
 
 Array *new_array(void);
 int add_value_at_index(Array *, int, int);
