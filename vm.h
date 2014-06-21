@@ -33,9 +33,6 @@ extern Opcode *prog;
 extern int prog_length;
 extern int debug;
 
-/* From loadprog.c */
-int loadprog(char *, FILE *);
-
 int vm_halt(void);
 int vm_execute(void);
 
