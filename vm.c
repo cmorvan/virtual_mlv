@@ -296,6 +296,8 @@ static int read_int(int *result) {
         perror("fgets");
         return 1;
     }
+    /* Remove the trailing '\n'. */
+    str[strlen(str) - 1] = '\0';
     /* To distinguish success/failure after call. */
     errno = 0;
     val = strtol(str, &endptr, 10);
