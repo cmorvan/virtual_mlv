@@ -23,12 +23,14 @@
 #ifndef OPCODE_H
 #define OPCODE_H
 
+#include <limits.h>
+
 /**
  * Opcodes are now first-class type rather than macros.
  */
 typedef enum Opcode {
     /* Without argument. */
-    VM_NOP = 0,
+    VM_NOP,
     VM_NEG,
     VM_ADD,
     VM_SUB,
@@ -64,12 +66,14 @@ typedef enum Opcode {
     VM_ALLOC,
     VM_FREE,
     
-    /* The sole purpose of the following opcode is to maintain backward
-     compatibility with old code. Former opcodes were defined using macros which
-     expanded to an `int'. Our new opcode enum starts by 0 and the absence of
-     negative value could have lead the compiler to choose an `unsigned int'
-     instead of a `signed int'. */
-    __VM_RESERVED = -1
+    /*
+     * The sole purpose of the following opcode is to maintain backward
+     * compatibility with old code. Former opcodes were defined using macros
+     * which expanded to an `int'. Our new opcode enum starts by 0 and the
+     * absence of negative value could have lead the compiler to choose an
+     * unsigned integral type and/or another integral with a smaller width.
+     */
+    __VM_RESERVED = INT_MIN
 } Opcode;
 
 #endif /* OPCODE_H */
