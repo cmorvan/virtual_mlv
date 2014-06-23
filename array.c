@@ -33,7 +33,7 @@ static const size_t DEFAULT_SIZE = 128;
  * A dynamic array which cannot be declared in the stack.
  */
 struct Array {
-    int *values; /**< The values of the array. */
+    unsigned *values; /**< The values of the array. */
     size_t size; /**< The size of the array. */
 };
 
@@ -66,18 +66,10 @@ Array *new_array(void) {
  * @param index The desired position in the array for the value to be added.
  * @return 0 if the value was successfully added, otherwise 1.
  */
-int add_value_at_index(Array *array, int value, int index) {
-    int *tmp;
+int add_value_at_index(Array *array, unsigned value, unsigned index) {
+    unsigned *tmp;
     size_t old_size = array->size;
     
-    if (index < 0) {
-        fprintf(stderr, "Index out of bounds: %d\n", index);
-        return 1;
-    }
-    if (value < 0) {
-        fprintf(stderr, "Illegal value: a label cannot have a negative value\n");
-        return 1;
-    }
     while (index > array->size) {
         array->size *= 2;
         tmp = realloc(array->values, array->size * sizeof(*array->values));
@@ -102,8 +94,8 @@ int add_value_at_index(Array *array, int value, int index) {
  * Returns the value in the array at the given index.
  * @return The value in the array or -1 if the index was out of bounds.
  */
-int get_value_at_index(const Array *array, int index) {
-    return (index < 0 || index >= array->size) ? -1 : array->values[index];
+int get_value_at_index(const Array *array, unsigned index) {
+    return (index >= array->size) ? -1 : array->values[index];
 }
 
 /**

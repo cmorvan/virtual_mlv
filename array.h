@@ -27,8 +27,8 @@
 typedef struct Array Array;
 
 Array *new_array(void);
-int add_value_at_index(Array *, int, int);
-int get_value_at_index(const Array *, int);
+int add_value_at_index(Array *, unsigned, unsigned);
+int get_value_at_index(const Array *, unsigned);
 void free_array(Array *);
 
 #endif /* ARRAY_H */
