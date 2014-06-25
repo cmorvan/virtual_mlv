@@ -76,4 +76,6 @@ typedef enum Opcode {
     __VM_RESERVED = INT_MIN
 } Opcode;
 
+const char *opcode_to_string(Opcode);
+
 #endif /* OPCODE_H */
