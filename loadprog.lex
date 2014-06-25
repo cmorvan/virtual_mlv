@@ -21,58 +21,58 @@
  *************************************************************************** */
 
 %{
+extern int fileno(FILE *);
 #include "loadprog.h"
 #include "opcode.h"
 #include <stdlib.h>
-#define RCOM1 return COM1;
-#define RCOM2 return COM2;
 %}
-%option noyywrap
-/* To remove compiler warnings about unused and unneeded functions. */
-%option nounput
+
 %option noinput
+%option nounput
+%option noyywrap
+%option yylineno
 
 NUMBER -?[0-9]+
 
 %%
 
-{NUMBER}    {yylval = atoi(yytext); return NUM;}
+{NUMBER}    { yylval = atoi(yytext);    return NUM; }
 
-"NEG"       {yylval = VM_NEG; RCOM1;}
-"ADD"       {yylval = VM_ADD; RCOM1;}
-"SUB"       {yylval = VM_SUB; RCOM1;}
-"MUL"       {yylval = VM_MUL; RCOM1;}
-"DIV"       {yylval = VM_DIV; RCOM1;}
-"MOD"       {yylval = VM_MOD; RCOM1;}
+"NEG"       { yylval = VM_NEG;      return COM1; }
+"ADD"       { yylval = VM_ADD;      return COM1; }
+"SUB"       { yylval = VM_SUB;      return COM1; }
+"MUL"       { yylval = VM_MUL;      return COM1; }
+"DIV"       { yylval = VM_DIV;      return COM1; }
+"MOD"       { yylval = VM_MOD;      return COM1; }
 
-"EQUAL"     {yylval = VM_EQUAL; RCOM1;}
-"NOTEQ"     {yylval = VM_NOTEQ; RCOM1;}
-"LEQ"       {yylval = VM_LEQ; RCOM1;}
-"LESS"      {yylval = VM_LESS; RCOM1;}
-"GEQ"       {yylval = VM_GEQ; RCOM1;}
-"GREATER"   {yylval = VM_GREATER; RCOM1;}
+"EQUAL"     { yylval = VM_EQUAL;    return COM1; }
+"NOTEQ"     { yylval = VM_NOTEQ;    return COM1; }
+"LEQ"       { yylval = VM_LEQ;      return COM1; }
+"LESS"      { yylval = VM_LESS;     return COM1; }
+"GEQ"       { yylval = VM_GEQ;      return COM1; }
+"GREATER"   { yylval = VM_GREATER;  return COM1; }
 
-"SWAP"      {yylval = VM_SWAP; RCOM1;}
-"PUSH"      {yylval = VM_PUSH; RCOM1;}
-"POP"       {yylval = VM_POP; RCOM1;}
-"READ"      {yylval = VM_READ; RCOM1;}
-"WRITE"     {yylval = VM_WRITE; RCOM1;}
-"READCH"    {yylval = VM_READCH; RCOM1;}
-"WRITECH"   {yylval = VM_WRITECH; RCOM1;}
-"SET"       {yylval = VM_SET; RCOM2;}
-"LOAD"      {yylval = VM_LOAD; RCOM1;}
-"LOADR"     {yylval = VM_LOADR; RCOM1;}
-"SAVE"      {yylval = VM_SAVE; RCOM1;}
-"SAVER"     {yylval = VM_SAVER; RCOM1;}
-"JUMP"      {yylval = VM_JUMP; RCOM2;}
-"JUMPF"     {yylval = VM_JUMPF; RCOM2;}
-"LABEL"     {yylval = VM_LABEL; return LBL;}
-"CALL"      {yylval = VM_CALL; RCOM2;}
-"RETURN"    {yylval = VM_RETURN; RCOM1;}
+"SWAP"      { yylval = VM_SWAP;     return COM1; }
+"PUSH"      { yylval = VM_PUSH;     return COM1; }
+"POP"       { yylval = VM_POP;      return COM1; }
+"READ"      { yylval = VM_READ;     return COM1; }
+"WRITE"     { yylval = VM_WRITE;    return COM1; }
+"READCH"    { yylval = VM_READCH;   return COM1; }
+"WRITECH"   { yylval = VM_WRITECH;  return COM1; }
+"SET"       { yylval = VM_SET;      return COM2; }
+"LOAD"      { yylval = VM_LOAD;     return COM1; }
+"LOADR"     { yylval = VM_LOADR;    return COM1; }
+"SAVE"      { yylval = VM_SAVE;     return COM1; }
+"SAVER"     { yylval = VM_SAVER;    return COM1; }
+"JUMP"      { yylval = VM_JUMP;     return COM2; }
+"JUMPF"     { yylval = VM_JUMPF;    return COM2; }
+"LABEL"     { yylval = VM_LABEL;    return LBL; }
+"CALL"      { yylval = VM_CALL;     return COM2; }
+"RETURN"    { yylval = VM_RETURN;   return COM1; }
 
-"ALLOC"     {yylval = VM_ALLOC; RCOM2;}
-"FREE"      {yylval = VM_FREE; RCOM2;}
-"HALT"      {yylval = VM_HALT; RCOM1;}
+"ALLOC"     { yylval = VM_ALLOC;    return COM2; }
+"FREE"      { yylval = VM_FREE;     return COM2; }
+"HALT"      { yylval = VM_HALT;     return COM1; }
 [ \t] ;
 "#".* ;
 "\n"        return EOL;
