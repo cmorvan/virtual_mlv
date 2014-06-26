@@ -16,7 +16,7 @@
  * <http://www.gnu.org/licenses/>.
  *
  *
- *  Authors: S. Lombardy, N. Bedon, C. Morvan
+ *  Authors: S. Lombardy, N. Bedon, C. Morvan, W. Hay
  *
  *************************************************************************** */
 
@@ -34,13 +34,13 @@ static int reg1;
 static int reg2;
 
 /** The program counter. */
-static int prog_counter = 0;
+static int prog_counter;
 
 /** The base register. */
 int base = 0;
 
 /** The code itself. */
-Opcode *prog = NULL;
+int *prog = NULL;
 
 /** The debug flag. */
 int debug = 0;
@@ -507,12 +507,12 @@ int vm_execute(void) {
         case VM_LEQ:        vm_leq();       break;
         case VM_GREATER:    vm_greater();   break;
         case VM_GEQ:        vm_geq();       break;
-        case VM_SET:        vm_set(prog[prog_counter++]); break;
+        case VM_SET:        vm_set(prog[prog_counter++]);   break;
         case VM_LOAD:       vm_load();      break;
         case VM_LOADR:      vm_loadr();     break;
         case VM_SAVE:       vm_save();      break;
         case VM_SAVER:      vm_saver();     break;
-        case VM_JUMP:       vm_jump(prog[prog_counter]); break;
+        case VM_JUMP:       vm_jump(prog[prog_counter]);    break;
         case VM_JUMPF:      vm_jumpf(prog[prog_counter++]); break;
         case VM_PUSH:       vm_push();      break;
         case VM_POP:        vm_pop();       break;
@@ -522,10 +522,10 @@ int vm_execute(void) {
         case VM_READCH:     vm_readch();    break;
         case VM_WRITECH:    vm_writech();   break;
         case VM_HALT:       halt = 1;       break;
-        case VM_CALL:       vm_call(prog[prog_counter]); break;
+        case VM_CALL:       vm_call(prog[prog_counter]);    break;
         case VM_RETURN:     vm_return();    break;
         case VM_ALLOC:      vm_alloc(prog[prog_counter++]); break;
-        case VM_FREE:       vm_free(prog[prog_counter++]); break;
+        case VM_FREE:       vm_free(prog[prog_counter++]);  break;
                 
         /*
          * These values cannot be loaded into our program nor be really matched.
