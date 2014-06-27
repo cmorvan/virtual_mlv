@@ -77,5 +77,6 @@ typedef enum Opcode {
 } Opcode;
 
 const char *opcode_to_string(Opcode);
+void print_code_segment(const int *, int);
 
 #endif /* OPCODE_H */

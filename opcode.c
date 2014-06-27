@@ -24,6 +24,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+static int has_runtime_arg(Opcode);
+static int is_a_jump(Opcode);
+
 /**
  * Returns the string representation of an opcode.
  * @param opcode The opcode whose string representation is desired.
@@ -69,4 +72,73 @@ const char *opcode_to_string(Opcode opcode) {
     /* This part of the code is supposed to be unreachable. */
     fprintf(stderr, "Fatal error: unmatched opcode\n");
     return "";
+}
+
+/**
+ * Prints a code segment.
+ * @param code The code segment to be printed.
+ * @param length The length of the code segment to be printed.
+ */
+void print_code_segment(const int *code, int length) {
+    int i;
+    /*
+     * A flag to indicate if the code has to be treated as an argument. It
+     * allows us to distinguish opcodes from their arguments when printing the
+     * code segment.
+     */
+    int as_arg = 0;
+    /*
+     * A flag to indicate if the code implies a jump. It allows us to make a
+     * distinction between a jump argument which is prefixed by '#' and a normal
+     * argument which isn't.
+     */
+    int as_jump = 0;
+    
+    printf(" Code:\n");
+    for (i = 0; i < length; i++) {
+        if (!as_arg) {
+            printf("%5d: %s\n", i, opcode_to_string(code[i]));
+            if (has_runtime_arg(code[i])) {
+                as_arg = 1;
+            }
+            if (is_a_jump(code[i])) {
+                as_jump = 1;
+            }
+        } else {
+            printf(as_jump ? "%5d: #%d\n" : "%5d: %d\n", i, code[i]);
+            as_arg = 0;
+            as_jump = 0;
+        }
+    }
+}
+
+/**
+ * Tells whether an opcode has an argument at runtime.
+ * @param opcode The opcode to be tested.
+ * @return 1 if the opcode has a runtime argument, otherwise 0.
+ */
+static int has_runtime_arg(Opcode opcode) {
+    switch (opcode) {
+    case VM_SET: case VM_JUMP: case VM_JUMPF: case VM_CALL: case VM_ALLOC:
+    case VM_FREE:
+        return 1;
+    default:
+        break;
+    }
+    return 0;
+}
+
+/**
+ * Tells whether an opcode implies a jump.
+ * @param opcode The opcode to be tested.
+ * @return 1 if the opcode implies a jump, otherwise 0.
+ */
+static int is_a_jump(Opcode opcode) {
+    switch (opcode) {
+    case VM_JUMP: case VM_JUMPF: case VM_CALL:
+        return 1;
+    default:
+        break;
+    }
+    return 0;
 }
