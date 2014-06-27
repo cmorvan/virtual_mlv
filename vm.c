@@ -23,7 +23,6 @@
 
 #include "mystack.h"
 #include "vm.h"
-#include <ctype.h>
 #include <errno.h>
 #include <limits.h>
 
@@ -278,7 +277,7 @@ static int vm_swap(void) {
  * @return 0 upon success or 1 if an error occurs.
  */
 static int vm_read(void) {
-    printf("<< ");
+    printf("Read: ");
     return read_int(&reg1);
 }
 
@@ -333,7 +332,7 @@ static int read_int(int *result) {
  * @return Always 0.
  */
 static int vm_write(void) {
-    printf(">> %d\n", reg1);
+    printf("Write: %d\n", reg1);
     return 0;
 }
 
@@ -361,7 +360,7 @@ static int vm_writech(void) {
  * @return 0 upon success or 1 if the label is out of bounds.
  */
 static int vm_jump(int n) {
-    if (n < 0 || n >= prog_length) {
+    if (n >= prog_length) {
         fprintf(stderr, "JUMP: jump label is out of bounds\n");
         return 1;
     }
@@ -376,7 +375,7 @@ static int vm_jump(int n) {
  */
 static int vm_jumpf(int n) {
     if (reg1 == 0) {
-        if (n < 0 || n >= prog_length) {
+        if (n >= prog_length) {
             fprintf(stderr, "JUMPF: illegal jump\n");
             return 1;
         }
@@ -445,7 +444,7 @@ static int vm_free(int n) {
     int i;
     for (i = 0; i < n; i++) {
         if (pop(NULL)) {
-            fprintf(stderr, "FREE: pile vide\n");
+            fprintf(stderr, "FREE: stack empty\n");
             return 1;
         }
     }
@@ -546,6 +545,7 @@ int vm_execute(void) {
             display_stack();
             printf("prog line: %d  register 1: %d   register 2: %d\n",
                    prog_counter, reg1, reg2);
+            /* For step-by-step execution. */
             getchar();
         }
     }
