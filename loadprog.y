@@ -26,95 +26,201 @@
 #include "opcode.h"
 #include "array.h"
 
+/* Loadprog() error codes. */
+#define PARSE_ERROR    -1
+#define LABELS_ERROR   -2
+#define CODE_SEG_ERROR -3
+#define NO_PROG_ERROR  -4
+
+/* Flex and Bison declarations. */
 int yylval;
 int yylex(void);
 int yyerror(const char *);
 extern FILE *yyin;
+extern int yylineno;
 
-typedef struct Instruction Instruction;
-struct Instruction {
+typedef struct Instruction {
     Opcode opcode;
     int arg;
     int has_arg;
-    Instruction *next_instruction;
+} Instruction;
+
+typedef struct List List;
+struct List {
+    Instruction instruction;
+    List *next;
 };
 
-Instruction *new_inst(Instruction *old) {
-    Instruction *inst = malloc(sizeof(*inst));
-    inst->next_instruction = old;
-    return inst;
+/** The dynamic array of labels. */
+static Array *labels = NULL;
+
+/** The code segment. */
+extern Opcode *prog;
+
+/** The length of the program (excluding labels). */
+int prog_length = 0;
+
+/** The list of instructions. */
+static List *list = NULL;
+
+/** The number of semantic errors. */
+static int nerr;
+
+/**
+ * Creates a new list and appends another list to it. The insertion is done in
+ * constant time.
+ * @param next The next list of the newly created list.
+ * @return The newly created list.
+ */
+List *new_list(List *next) {
+    List *list = malloc(sizeof(*list));
+    list->next = next;
+    return list;
 }
-
-/* Labels are not stored in a standard array anymore, but in a dynamic array. */
-Array *labels = NULL;
-
-int prognum = 0;
-Opcode *prog;
-int prog_length;
-Instruction *instructions = NULL;
 
 %}
 
-%token NUM COM1 COM2 LBL
-%token EOL
+%token NUM COM1 COM2 LBL EOL
 %start input
 
 %%
 
 input : line input {}
-      | {return 0;}
+      | { return 0; }
 
 line : EOL {}
-     | COM1 EOL { instructions = new_inst(instructions);
-                  instructions->opcode = $1;
-		          instructions->has_arg = 0;
-                  prognum++;
+     | COM1 EOL {
+         list = new_list(list);
+         list->instruction.opcode = $1;
+         list->instruction.has_arg = 0;
+         prog_length++;
      }
-     | COM2 NUM EOL { instructions = new_inst(instructions);
-                      instructions->opcode = $1;
-                      instructions->arg = $2;
-                      instructions->has_arg = 1;
-                      prognum += 2;
+     | COM2 NUM EOL {
+         if ($1 != VM_SET && $2 < 0) {
+             nerr++;
+             fprintf(stderr, "line %d: %s expects an unsigned integer as "
+                "argument but is here used with a signed integer\n",
+                yylineno, opcode_to_string($1));
+         }
+         list = new_list(list);
+         list->instruction.opcode = $1;
+         list->instruction.arg = $2;
+         list->instruction.has_arg = 1;
+         prog_length += 2;
      }
-     | LBL NUM EOL { add_value_at_index(labels, prognum, $2); }
+     | LBL NUM EOL {
+         if ($2 < 0) {
+             nerr++;
+             fprintf(stderr, "line %d: LABEL expects an unsigned integer as "
+                "argument but is here used with a signed integer\n", yylineno);
+         }
+         /* The casts are safe since both integers are strictly positive. */
+         add_value_at_index(labels, (unsigned) prog_length, (unsigned) $2);
+     }
 
 %%
 
+/**
+ * The bison error reporting function. Prints an error message preceded by the
+ * line number.
+ * @param msg The error message to be printed.
+ * @return Always 0.
+ */
 int yyerror(const char *msg) {
-    fprintf(stderr, "\n%s\n", msg);
+    fprintf(stderr, "line %d: %s\n", yylineno, msg);
     return 0;
 }
 
-int loadprog(char *src) {
-    Instruction *inst_list;
+/**
+ * Prints an error message according to the value returned by the @p loadprog
+ * function.
+ * @param errno The error code whose message is to be printed.
+ */
+void print_load_error(int errno) {
+    switch (errno) {
+    case 0: /* Success. */ break;
+    case PARSE_ERROR:
+        fprintf(stderr, "error: yyparse() failed\n");
+        break;
+    case LABELS_ERROR:
+        fprintf(stderr, "error: the labels array could not be allocated\n");
+        break;
+    case CODE_SEG_ERROR:
+        fprintf(stderr, "error: the code segment could not be allocated\n");
+        break;
+    case NO_PROG_ERROR:
+        fprintf(stderr, "error: no instructions found\n");
+        break;
+    default:
+        fprintf(stderr, "error: %d errors detected, code not loaded\n", nerr);
+        break;
+    }
+}
+
+/**
+ * Loads the program into the VM code segment by reading instructions from a
+ * file.
+ * @param input The input file which contains instructions.
+ * @return 0 upon success, -1 if a parsing error occurs, -2 if a memory error
+ *         occurs or a strictly positive value indicating how many semantic
+ *         errors were detected.
+ */
+int loadprog(FILE *input) {
+    List *l;
     int i;
+    int status = 0;
+    
     labels = new_array();
-    yyin = fopen(src, "r");
-    yyparse();
-    /* Global variable : prog_length (from vm.c) */
-    prog_length = prognum;
-    inst_list = instructions;
-    /* Global variable : prog (from vm.c) */
-    prog = malloc(prog_length * sizeof(*prog));
-    i = prog_length;
-    while (instructions != NULL) {
-        if (instructions->has_arg) {
-            if (instructions->opcode == VM_CALL
-                    || instructions->opcode == VM_JUMP
-                    || instructions->opcode == VM_JUMPF) {
-                prog[--i] = get_value_at_index(labels, instructions->arg);
-            }
-            else {
-                prog[--i] = instructions->arg;
+    if (!labels) {
+        return LABELS_ERROR;
+    }
+    yyin = input;
+    if (yyparse()) {
+        status = PARSE_ERROR;
+        goto end;
+    }
+    if (nerr) {
+        status = nerr;
+        goto end;
+    }
+    if (prog_length == 0) {
+        status = NO_PROG_ERROR;
+        goto end;
+    }
+    /* The code segment (from vm.c). */
+    prog = calloc(prog_length, sizeof(*prog));
+    if (!prog) {
+        perror("calloc");
+        status = CODE_SEG_ERROR;
+        goto end;
+    }
+    /*
+     * Insertions into the list are done by prepending. It means that
+     * instructions are stored in the list in the reverse order, i.e. the last
+     * instruction of the program appears at the beginning of the list and the
+     * first instruction at the end of the list.
+     *
+     * The list traversal is done normally but the code is loaded into the code
+     * segment in the reverse order.
+     */
+    for (l = list, i = prog_length; list != NULL; /* No increment. */) {
+        if (list->instruction.has_arg) {
+            switch (list->instruction.opcode) {
+            case VM_CALL: case VM_JUMP: case VM_JUMPF:
+                prog[--i] = get_value_at_index(labels, list->instruction.arg);
+                break;
+            default:
+                prog[--i] = list->instruction.arg;
+                break;
             }
         }
-        prog[--i] = instructions->opcode;
-        inst_list = instructions;
-        instructions = instructions->next_instruction;
-        free(inst_list);
+        prog[--i] = list->instruction.opcode;
+        /* Classic list memory release. */
+        l = list;
+        list = list->next;
+        free(l);
     }
+end:
     free_array(labels);
-    return 0;
+    return status;
 }
-
-	
