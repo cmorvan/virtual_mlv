@@ -16,25 +16,19 @@
  * <http://www.gnu.org/licenses/>.
  *
  *
- *  Authors: S. Lombardy, N. Bedon, C. Morvan
+ *  Authors: S. Lombardy, N. Bedon, C. Morvan, W. Hay
  *
  *************************************************************************** */
-#ifndef MY_STACK
-#define MY_STACK
+
+#ifndef MYSTACK_H
+#define MYSTACK_H
 
 int push(int);
-
 int pop(int *);
-
-int get(int *);
-
 int dirload(int, int *);
-
-int dirsave(int, int );
-
+int dirsave(int, int);
 int display_stack(void);
-
 int stack_size(void);
-
 int free_stack(void);
-#endif
+
+#endif /* MYSTACK_H */
