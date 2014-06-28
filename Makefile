@@ -21,8 +21,10 @@
 CC = gcc
 LEXER = flex
 PARSER = bison
-CFLAGS = -Wall -ansi -pedantic
+CFLAGS =
 EXEC = vm
+LOAD = loadprog
+DEBUG = yes
 
 HAS_CLANG = $(shell which clang > /dev/null 2>&1; echo $$?)
 DOXYCHECK = # Used to check doxygen comments consistency.
@@ -33,24 +35,35 @@ else
     DOXYCHECK = @echo "It seems that you don't have `clang', doxycheck aborted."
 endif
 
-all: $(EXEC) clean doxycheck
+ifeq ($(DEBUG), yes)
+    CFLAGS += -Wall -Wextra -std=c89 -pedantic 
+else
+    CFLAGS += -O2 -DNDEBUG
+endif
+
+all: $(EXEC) clean
 
 doxycheck:
 	$(DOXYCHECK)
 
-$(EXEC): main.o vm.o loadprog.o array.o lex.yy.o mystack.o
+$(EXEC): main.o opcode.o vm.o $(LOAD).o array.o lex.yy.o mystack.o
 	$(CC) $(CFLAGS) -o $@ $^
 
-loadprog.c: loadprog.y
-	$(PARSER) -d -o loadprog.c loadprog.y
+$(LOAD).c: $(LOAD).y
+	$(PARSER) -d -o $(LOAD).c $(LOAD).y
 
-loadprog.h: loadprog.c
+$(LOAD).h: $(LOAD).c
 
-lex.yy.c: loadprog.lex loadprog.h
-	$(LEXER) loadprog.lex
+lex.yy.c: $(LOAD).lex $(LOAD).h
+	$(LEXER) $(LOAD).lex
 
 %.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
+.PHONY: clean mrproper
+
 clean:
-	rm -f *.o lex.yy.c loadprog.[ch]
+	-rm -f *.o lex.yy.c $(LOAD).[ch]
+
+mrproper: clean
+	-rm -f $(EXEC)
