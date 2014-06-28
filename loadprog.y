@@ -52,7 +52,7 @@ struct List {
 };
 
 /** The dynamic array of labels. */
-static Array *labels = NULL;
+static Array *labels;
 
 /** The code segment. */
 extern Opcode *prog;
@@ -61,7 +61,7 @@ extern Opcode *prog;
 int prog_length = 0;
 
 /** The list of instructions. */
-static List *list = NULL;
+static List *list;
 
 /** The number of semantic errors. */
 static int nerr;
@@ -80,6 +80,7 @@ List *new_list(List *next) {
 
 %}
 
+%error-verbose
 %token NUM COM1 COM2 LBL EOL
 %start input
 
