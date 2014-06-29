@@ -95,7 +95,7 @@ int add_value_at_index(Array *array, unsigned value, unsigned index) {
  * @return The value in the array or -1 if the index was out of bounds.
  */
 int get_value_at_index(const Array *array, unsigned index) {
-    return (index >= array->size) ? -1 : array->values[index];
+    return (index >= array->size) ? -1 : (int) array->values[index];
 }
 
 /**
