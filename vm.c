@@ -25,6 +25,9 @@
 #include "vm.h"
 #include <errno.h>
 #include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 /** The first register. */
 static int reg1;
@@ -390,7 +393,11 @@ static int vm_jumpf(int n) {
  * @return 0 upon success or 1 if the call label is out of bounds.
  */
 static int vm_call(int n) {
-    if (push(prog_counter + 1)) {
+    /*
+     * Push the position of the instruction following the call (prog_counter is
+     * already on that position).
+     */
+    if (push(prog_counter)) {
         fprintf(stderr, "Stack overflow\n");
         return 1;
     }
@@ -490,8 +497,14 @@ int vm_halt(void) {
  * @return 0 upon success or 1 if the program contains illegal opcodes.
  */
 int vm_execute(void) {
-    int halt = 0;
-    while (!halt) {
+    int halt;
+    for (halt = 0; !halt && prog_counter < prog_length; /* No increment. */) {
+        if (debug) {
+            display_stack();
+            printf("#%d   reg1 = %d   reg2 = %d\n", prog_counter, reg1, reg2);
+            /* For step-by-step execution. */
+            getchar();
+        }
         switch (prog[prog_counter++]) {
         case VM_NOP:        vm_nop();       break;
         case VM_NEG:        vm_neg();       break;
@@ -511,7 +524,7 @@ int vm_execute(void) {
         case VM_LOADR:      vm_loadr();     break;
         case VM_SAVE:       vm_save();      break;
         case VM_SAVER:      vm_saver();     break;
-        case VM_JUMP:       vm_jump(prog[prog_counter]);    break;
+        case VM_JUMP:       vm_jump(prog[prog_counter++]);  break;
         case VM_JUMPF:      vm_jumpf(prog[prog_counter++]); break;
         case VM_PUSH:       vm_push();      break;
         case VM_POP:        vm_pop();       break;
@@ -521,7 +534,7 @@ int vm_execute(void) {
         case VM_READCH:     vm_readch();    break;
         case VM_WRITECH:    vm_writech();   break;
         case VM_HALT:       halt = 1;       break;
-        case VM_CALL:       vm_call(prog[prog_counter]);    break;
+        case VM_CALL:       vm_call(prog[prog_counter++]);  break;
         case VM_RETURN:     vm_return();    break;
         case VM_ALLOC:      vm_alloc(prog[prog_counter++]); break;
         case VM_FREE:       vm_free(prog[prog_counter++]);  break;
@@ -540,13 +553,6 @@ int vm_execute(void) {
          * No default case to let the compiler ensure that all opcodes values
          * are matched.
          */
-        }
-        if (debug) {
-            display_stack();
-            printf("prog line: %d  register 1: %d   register 2: %d\n",
-                   prog_counter, reg1, reg2);
-            /* For step-by-step execution. */
-            getchar();
         }
     }
     return 0;

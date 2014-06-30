@@ -24,9 +24,6 @@
 #define VM_H
 
 #include "opcode.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 extern int base;
 extern Opcode *prog;
