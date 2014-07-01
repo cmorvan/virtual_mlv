@@ -520,12 +520,6 @@ int vm_halt(void) {
 int vm_execute(void) {
     int halt;
     for (halt = 0; !halt && prog_counter < prog_length; /* No increment. */) {
-        if (debug) {
-            display_stack();
-            printf("#%d   reg1 = %d   reg2 = %d\n", prog_counter, reg1, reg2);
-            /* For step-by-step execution. */
-            getchar();
-        }
         switch (prog[prog_counter++]) {
         case VM_NOP:        vm_nop();       break;
         case VM_NEG:        vm_neg();       break;
@@ -574,6 +568,12 @@ int vm_execute(void) {
          * No default case to let the compiler ensure that all opcodes values
          * are matched.
          */
+        }
+        if (debug) {
+            display_stack();
+            printf("#%d   reg1 = %d   reg2 = %d\n", prog_counter - 1, reg1, reg2);
+            /* For step-by-step execution. */
+            fgetc(input);
         }
     }
     return 0;
