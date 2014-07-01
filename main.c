@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
         if (debug) {
             print_code_segment(prog, prog_length);
         }
-        if (exec) {
+        if (exec && !vm_select_input()) {
             vm_execute();
         }
     }

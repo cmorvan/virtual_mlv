@@ -30,6 +30,7 @@ extern Opcode *prog;
 extern int prog_length;
 extern int debug;
 
+int vm_select_input(void);
 int vm_halt(void);
 int vm_execute(void);
 

@@ -28,6 +28,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+
+/** The runtime input for commands which have to read arguments. */
+static FILE *input;
 
 /** The first register. */
 static int reg1;
@@ -294,7 +298,7 @@ static int read_int(int *result) {
     char *endptr;
     char str[BUFSIZ] = {0};
     
-    if (fgets(str, sizeof(str), stdin) == NULL) {
+    if (fgets(str, sizeof(str), input) == NULL) {
         perror("fgets");
         return 1;
     }
@@ -344,7 +348,7 @@ static int vm_write(void) {
  * @return Always 0.
  */
 static int vm_readch(void) {
-    reg1 = getchar();
+    reg1 = fgetc(input);
     return 0;
 }
 
@@ -483,12 +487,29 @@ static int vm_pop(void) {
 }
 
 /**
+ * Selects the input which guarantees user interaction at runtime.
+ * @return 0 upon success or 1 if the input selection failed.
+ */
+int vm_select_input(void) {
+    input = isatty(STDIN_FILENO) ? stdin : fopen("/dev/tty", "r");
+    if (!input) {
+        perror("fopen");
+        return 1;
+    }
+    return 0;
+}
+
+/**
  * Halts the VM.
  * @return Always 0.
  */
 int vm_halt(void) {
     free(prog);
     free_stack();
+    if (input != stdin && input != NULL && fclose(input) == EOF) {
+        perror("fclose");
+        return 1;
+    }
     return 0;
 }
 
