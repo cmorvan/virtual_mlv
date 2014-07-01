@@ -114,9 +114,10 @@ line : EOL {}
              nerr++;
              fprintf(stderr, "line %d: LABEL expects an unsigned integer as "
                 "argument but is here used with a signed integer\n", yylineno);
+         } else {
+             /* The casts are safe since both integers are strictly positive. */
+             add_value_at_index(labels, (unsigned) prog_length, (unsigned) $2);
          }
-         /* The casts are safe since both integers are strictly positive. */
-         add_value_at_index(labels, (unsigned) prog_length, (unsigned) $2);
      }
 
 %%
@@ -153,7 +154,9 @@ void print_load_error(int errno) {
         fprintf(stderr, "error: no instructions found\n");
         break;
     default:
-        fprintf(stderr, "error: %d errors detected, code not loaded\n", nerr);
+        fprintf(stderr, nerr > 1 ? "error: %d errors detected\n"
+                                 : "error: %d error detected\n",
+                nerr);
         break;
     }
 }
