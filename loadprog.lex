@@ -38,6 +38,7 @@ NUMBER -?[0-9]+
 
 {NUMBER}    { yylval = atoi(yytext);    return NUM; }
 
+"NOP"       { yylval = VM_NOP;      return COM1; }
 "NEG"       { yylval = VM_NEG;      return COM1; }
 "ADD"       { yylval = VM_ADD;      return COM1; }
 "SUB"       { yylval = VM_SUB;      return COM1; }
