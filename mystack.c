@@ -87,7 +87,7 @@ int pop(int *val) {
         }
     }
     if (val != NULL)
-    *val = the_stack->v_stack[occstack - 1];
+        *val = the_stack->v_stack[occstack - 1];
     occstack--;
     return 0;
 }
