@@ -5,7 +5,8 @@ It was originally written by Sylvain Lombardy at Université Paris-Est
 Marne-la-Vallée (UPEM). Afterwards, it has been modified by Nicolas Bedon and
 Christophe Morvan. Gaël Fuhs has contributed a nice implementation of a dynamic
 array, in order to remove the hard coded 100 label limit. Further, Wuthy Hay has
-performed improvements on the entire code base.
+performed improvements on the entire code base. Recently, Quentin Campos and
+Jefferson Mangue have modified the grammar to get rid of the 10000 LOC limit.
 
 Currently this software is maintained by Christophe Morvan.
 

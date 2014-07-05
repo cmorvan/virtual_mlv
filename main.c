@@ -96,8 +96,8 @@ static void print_version(void) {
 "virtual_mlv 2.0\n"
 "The virtual machine of the compilation course of the Université Paris-Est\n"
 "Marne-la-Vallée (UPEM).\n"
-"Written by Sylvain Lombardy, Nicolas Bedon, Christophe Morvan, Gaël Fuhs\n"
-"and Wuthy Hay.\n");
+"Written by Sylvain Lombardy, Nicolas Bedon, Christophe Morvan, Gaël Fuhs,\n"
+"Wuthy Hay, Quentin Campos and Jefferson Mangue.\n");
     printf("\n");
     printf(
 "This is free software; see the source for copying conditions.  There is NO\n"
