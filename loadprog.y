@@ -16,7 +16,8 @@
  * <http://www.gnu.org/licenses/>.
  *
  *
- *  Authors: S. Lombardy, N. Bedon, C. Morvan, G. Fuhs, W. Hay
+ *  Authors: S. Lombardy, N. Bedon, C. Morvan, G. Fuhs, W. Hay, Q. Campos,
+ *           J. Mangue
  *
  *************************************************************************** */
 
@@ -86,8 +87,8 @@ List *new_list(List *next) {
 
 %%
 
-input : line input {}
-      | { return 0; }
+input : input line {}
+      | /* empty */ {}
 
 line : EOL {}
      | COM1 EOL {
