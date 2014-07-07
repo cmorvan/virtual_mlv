@@ -33,7 +33,7 @@ static void print_version(void);
 static void print_help(const char *);
 
 int main(int argc, char *argv[]) {
-    int opt, errstatus;
+    int opt;
     FILE *input = NULL;
     /* Has to be static to be known at compile-time. */
     static int exec = 1;
@@ -69,10 +69,7 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
     /* Using the fuction generated from loadprog.y. */
-    errstatus = loadprog(input);
-    if (errstatus) {
-        print_load_error(errstatus);
-    } else {
+    if (!loadprog(input)) {
         if (debug) {
             print_code_segment(prog, prog_length);
         }
