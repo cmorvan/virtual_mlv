@@ -28,17 +28,18 @@
 #include "array.h"
 
 /* Loadprog() error codes. */
-#define PARSE_ERROR    -1
+#define YYPARSE_ERROR  -1
 #define LABELS_ERROR   -2
 #define CODE_SEG_ERROR -3
 #define NO_PROG_ERROR  -4
 
 /* Flex and Bison declarations. */
 int yylval;
-int yylex(void);
 int yyerror(const char *);
 extern FILE *yyin;
 extern int yylineno;
+extern int yylex(void);
+extern int yylex_destroy(void);
 
 typedef struct Instruction {
     Opcode opcode;
@@ -93,6 +94,9 @@ input : input line {}
 line : EOL {}
      | COM1 EOL {
          list = new_list(list);
+         if (!list) {
+             YYABORT;
+         }
          list->instruction.opcode = $1;
          list->instruction.has_arg = 0;
          prog_length++;
@@ -105,6 +109,9 @@ line : EOL {}
                 yylineno, opcode_to_string($1));
          }
          list = new_list(list);
+         if (!list) {
+             YYABORT;
+         }
          list->instruction.opcode = $1;
          list->instruction.arg = $2;
          list->instruction.has_arg = 1;
@@ -135,14 +142,27 @@ int yyerror(const char *msg) {
 }
 
 /**
- * Prints an error message according to the value returned by the @p loadprog
- * function.
- * @param errno The error code whose message is to be printed.
+ * Frees a singly-linked list.
+ * @param list The list to be freed.
  */
-void print_load_error(int errno) {
+static void free_list(List *list) {
+    List *l;
+    while (list != NULL) {
+        l = list;
+        list = list->next;
+        free(l);
+    }
+}
+
+/**
+ * Prints an error message according to the value returned by the @p loadprog
+ * function or does nothing if there was no error.
+ * @param errno The error code returned by the @p loadprog function.
+ */
+static void print_load_error(int errno) {
     switch (errno) {
     case 0: /* Success. */ break;
-    case PARSE_ERROR:
+    case YYPARSE_ERROR:
         fprintf(stderr, "error: yyparse() failed\n");
         break;
     case LABELS_ERROR:
@@ -166,9 +186,7 @@ void print_load_error(int errno) {
  * Loads the program into the VM code segment by reading instructions from a
  * file.
  * @param input The input file which contains instructions.
- * @return 0 upon success, -1 if a parsing error occurs, -2 if a memory error
- *         occurs or a strictly positive value indicating how many semantic
- *         errors were detected.
+ * @return 0 upon success or 1 if an error occurs.
  */
 int loadprog(FILE *input) {
     List *l;
@@ -177,11 +195,12 @@ int loadprog(FILE *input) {
     
     labels = new_array();
     if (!labels) {
-        return LABELS_ERROR;
+        status = LABELS_ERROR;
+        goto end;
     }
     yyin = input;
     if (yyparse()) {
-        status = PARSE_ERROR;
+        status = YYPARSE_ERROR;
         goto end;
     }
     if (nerr) {
@@ -208,24 +227,24 @@ int loadprog(FILE *input) {
      * The list traversal is done normally but the code is loaded into the code
      * segment in the reverse order.
      */
-    for (l = list, i = prog_length; list != NULL; /* No increment. */) {
-        if (list->instruction.has_arg) {
-            switch (list->instruction.opcode) {
+    for (l = list, i = prog_length; l != NULL; l = l->next) {
+        if (l->instruction.has_arg) {
+            switch (l->instruction.opcode) {
             case VM_CALL: case VM_JUMP: case VM_JUMPF:
-                prog[--i] = get_value_at_index(labels, list->instruction.arg);
+                prog[--i] = get_value_at_index(labels, l->instruction.arg);
                 break;
             default:
-                prog[--i] = list->instruction.arg;
+                prog[--i] = l->instruction.arg;
                 break;
             }
         }
-        prog[--i] = list->instruction.opcode;
-        /* Classic list memory release. */
-        l = list;
-        list = list->next;
-        free(l);
+        prog[--i] = l->instruction.opcode;
     }
+    
 end:
+    print_load_error(status);
     free_array(labels);
-    return status;
+    free_list(list);
+    yylex_destroy();
+    return status != 0;
 }
