@@ -25,6 +25,7 @@ extern int fileno(FILE *);
 #include "loadprog.h"
 #include "opcode.h"
 #include <stdlib.h>
+extern int nerr;
 %}
 
 %option noinput
@@ -77,6 +78,8 @@ NUMBER -?[0-9]+
 [ \t] ;
 "#".* ;
 "\n"        return EOL;
-. fprintf(stderr, "unknown symbol: [%s]\n", yytext);
+.   { fprintf(stderr, "line %d: unknown symbol `%s'\n", yylineno, yytext);
+      nerr++;
+    }
 
 %%

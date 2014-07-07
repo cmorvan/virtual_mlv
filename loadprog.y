@@ -28,10 +28,9 @@
 #include "array.h"
 
 /* Loadprog() error codes. */
-#define YYPARSE_ERROR  -1
-#define LABELS_ERROR   -2
-#define CODE_SEG_ERROR -3
-#define NO_PROG_ERROR  -4
+#define SYNTAX_ERROR  -1
+#define NOMEM_ERROR   -2
+#define NO_PROG_ERROR -3
 
 /* Flex and Bison declarations. */
 int yylval;
@@ -57,7 +56,7 @@ struct List {
 static Array *labels;
 
 /** The code segment. */
-extern Opcode *prog;
+extern int *prog;
 
 /** The length of the program (excluding labels). */
 int prog_length = 0;
@@ -65,8 +64,8 @@ int prog_length = 0;
 /** The list of instructions. */
 static List *list;
 
-/** The number of semantic errors. */
-static int nerr;
+/** The number of lexical/syntactic/semantic errors. */
+int nerr = 0;
 
 /**
  * Creates a new list and appends another list to it. The insertion is done in
@@ -95,7 +94,7 @@ line : EOL {}
      | COM1 EOL {
          list = new_list(list);
          if (!list) {
-             YYABORT;
+             return 2;
          }
          list->instruction.opcode = $1;
          list->instruction.has_arg = 0;
@@ -105,12 +104,12 @@ line : EOL {}
          if ($1 != VM_SET && $2 < 0) {
              nerr++;
              fprintf(stderr, "line %d: %s expects an unsigned integer as "
-                "argument but is here used with a signed integer\n",
-                yylineno, opcode_to_string($1));
+                "argument but is here used with %d\n",
+                yylineno, opcode_to_string($1), $2);
          }
          list = new_list(list);
          if (!list) {
-             YYABORT;
+             return 2;
          }
          list->instruction.opcode = $1;
          list->instruction.arg = $2;
@@ -121,7 +120,7 @@ line : EOL {}
          if ($2 < 0) {
              nerr++;
              fprintf(stderr, "line %d: LABEL expects an unsigned integer as "
-                "argument but is here used with a signed integer\n", yylineno);
+                "argument but is here used with %d\n", yylineno, $2);
          } else {
              /* The casts are safe since both integers are strictly positive. */
              add_value_at_index(labels, (unsigned) prog_length, (unsigned) $2);
@@ -160,24 +159,23 @@ static void free_list(List *list) {
  * @param errno The error code returned by the @p loadprog function.
  */
 static void print_load_error(int errno) {
+    if (errno) {
+        fprintf(stderr, "\nAbort reason: ");
+    }
     switch (errno) {
     case 0: /* Success. */ break;
-    case YYPARSE_ERROR:
-        fprintf(stderr, "error: yyparse() failed\n");
+    case SYNTAX_ERROR:
+        fprintf(stderr, "an invalid input caused a syntax error\n");
         break;
-    case LABELS_ERROR:
-        fprintf(stderr, "error: the labels array could not be allocated\n");
-        break;
-    case CODE_SEG_ERROR:
-        fprintf(stderr, "error: the code segment could not be allocated\n");
+    case NOMEM_ERROR:
+        fprintf(stderr, "memory exhausted\n");
         break;
     case NO_PROG_ERROR:
-        fprintf(stderr, "error: no instructions found\n");
+        fprintf(stderr, "no instructions found\n");
         break;
     default:
-        fprintf(stderr, nerr > 1 ? "error: %d errors detected\n"
-                                 : "error: %d error detected\n",
-                nerr);
+        fprintf(stderr, "%d lexical/syntactic/semantic ", nerr);
+        fprintf(stderr, nerr > 1 ? "errors detected\n" : "error detected\n");
         break;
     }
 }
@@ -195,12 +193,16 @@ int loadprog(FILE *input) {
     
     labels = new_array();
     if (!labels) {
-        status = LABELS_ERROR;
+        status = NOMEM_ERROR;
         goto end;
     }
     yyin = input;
-    if (yyparse()) {
-        status = YYPARSE_ERROR;
+    status = yyparse();
+    if (status == 1) {
+        status = SYNTAX_ERROR;
+        goto end;
+    } else if (status == 2) {
+        status = NOMEM_ERROR;
         goto end;
     }
     if (nerr) {
@@ -215,7 +217,7 @@ int loadprog(FILE *input) {
     prog = calloc(prog_length, sizeof(*prog));
     if (!prog) {
         perror("calloc");
-        status = CODE_SEG_ERROR;
+        status = NOMEM_ERROR;
         goto end;
     }
     /*
@@ -242,7 +244,9 @@ int loadprog(FILE *input) {
     }
     
 end:
-    print_load_error(status);
+    if (status) {
+        print_load_error(status);
+    }
     free_array(labels);
     free_list(list);
     yylex_destroy();
