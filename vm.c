@@ -16,7 +16,7 @@
  * <http://www.gnu.org/licenses/>.
  *
  *
- *  Authors: S. Lombardy, N. Bedon, C. Morvan, W. Hay
+ *  Authors: S. Lombardy, N. Bedon, C. Morvan, W. Hay, Q. Campos, J. Mangue
  *
  *************************************************************************** */
 
@@ -83,6 +83,7 @@ static int vm_alloc(int);
 static int vm_free(int);
 static int vm_push(void);
 static int vm_pop(void);
+static int vm_topst(void);
 
 /**
  * Does nothing at all.
@@ -487,6 +488,14 @@ static int vm_pop(void) {
 }
 
 /**
+ * Puts the current position of top of the stack into @p reg1.
+ * @return Always 0.
+ */
+static int vm_topst(void) {
+    return vm_set(stack_size());
+}
+
+/**
  * Selects the input which guarantees user interaction at runtime.
  * @return 0 upon success or 1 if the input selection failed.
  */
@@ -553,6 +562,7 @@ int vm_execute(void) {
         case VM_RETURN:     vm_return();    break;
         case VM_ALLOC:      vm_alloc(prog[prog_counter++]); break;
         case VM_FREE:       vm_free(prog[prog_counter++]);  break;
+        case VM_TOPST:      vm_topst();     break;
                 
         /*
          * These values cannot be loaded into our program nor be really matched.

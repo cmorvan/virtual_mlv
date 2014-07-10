@@ -16,7 +16,7 @@
  * <http://www.gnu.org/licenses/>.
  *
  *
- *  Authors: S. Lombardy, N. Bedon, C. Morvan, W. Hay
+ *  Authors: S. Lombardy, N. Bedon, C. Morvan, W. Hay, Q. Campos, J. Mangue
  *
  *************************************************************************** */
 
@@ -75,6 +75,7 @@ NUMBER -?[0-9]+
 "ALLOC"     { yylval = VM_ALLOC;    return COM2; }
 "FREE"      { yylval = VM_FREE;     return COM2; }
 "HALT"      { yylval = VM_HALT;     return COM1; }
+"TOPST"     { yylval = VM_TOPST;    return COM1; }
 [ \t] ;
 "#".* ;
 "\n"        return EOL;

@@ -16,7 +16,7 @@
  * <http://www.gnu.org/licenses/>.
  *
  *
- *  Authors: S. Lombardy, N. Bedon, C. Morvan, W. Hay
+ *  Authors: S. Lombardy, N. Bedon, C. Morvan, W. Hay, Q. Campos, J. Mangue
  *
  *************************************************************************** */
 
@@ -56,7 +56,8 @@ typedef enum Opcode {
     VM_SAVER,
     VM_READCH,
     VM_WRITECH,
-
+    VM_TOPST,
+    
     /* With one argument. */
     VM_SET,
     VM_JUMP,

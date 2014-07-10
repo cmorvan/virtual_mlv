@@ -16,7 +16,7 @@
  * <http://www.gnu.org/licenses/>.
  *
  *
- *  Authors: S. Lombardy, N. Bedon, C. Morvan, W. Hay
+ *  Authors: S. Lombardy, N. Bedon, C. Morvan, W. Hay, Q. Campos, J. Mangue
  *
  *************************************************************************** */
 
@@ -67,6 +67,7 @@ const char *opcode_to_string(Opcode opcode) {
     case VM_ALLOC:      return "ALLOC";
     case VM_FREE:       return "FREE";
     case VM_LABEL:      return "LABEL";
+    case VM_TOPST:      return "TOPST";
     case __VM_RESERVED: return "__RESERVED";
     }
     /* This part of the code is supposed to be unreachable. */
