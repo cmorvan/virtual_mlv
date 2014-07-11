@@ -24,6 +24,8 @@
 #ifndef ARRAY_H
 #define ARRAY_H
 
+extern const int NO_VALUE;
+
 typedef struct Array Array;
 
 Array *new_array(void);

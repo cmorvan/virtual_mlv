@@ -29,11 +29,14 @@
 /** The default size for a new array. */
 static const size_t DEFAULT_SIZE = 128;
 
+/** The constant to indicate that there is no positive value in the array. */
+const int NO_VALUE = -1;
+
 /**
  * A dynamic array which cannot be declared in the stack.
  */
 struct Array {
-    unsigned *values; /**< The values of the array. */
+    int *values; /**< The values of the array. */
     size_t size; /**< The size of the array. */
 };
 
@@ -50,12 +53,13 @@ Array *new_array(void) {
         return array;
     }
     array->size = DEFAULT_SIZE;
-    array->values = calloc(array->size, sizeof(*array->values));
+    array->values = malloc(array->size * sizeof(*array->values));
     if (!array->values) {
         free(array);
         perror("calloc");
         return NULL;
     }
+    memset(array->values, NO_VALUE, array->size * sizeof(*array->values));
     return array;
 }
 
@@ -67,7 +71,7 @@ Array *new_array(void) {
  * @return 0 if the value was successfully added, otherwise 1.
  */
 int add_value_at_index(Array *array, unsigned value, unsigned index) {
-    unsigned *tmp;
+    int *tmp;
     size_t old_size = array->size;
     
     while (index > array->size) {
@@ -84,7 +88,7 @@ int add_value_at_index(Array *array, unsigned value, unsigned index) {
      * Zeroing memory space between the old size and the new one to be
      * consistent with our implementation of new_array() that uses calloc().
      */
-    memset(array->values + old_size, 0,
+    memset(array->values + old_size, NO_VALUE,
            (array->size - old_size) * sizeof(*array->values));
     array->values[index] = value;
     return 0;
@@ -92,10 +96,10 @@ int add_value_at_index(Array *array, unsigned value, unsigned index) {
 
 /**
  * Returns the value in the array at the given index.
- * @return The value in the array or -1 if the index was out of bounds.
+ * @return The value in the array or NO_VALUE if the index was out of bounds.
  */
 int get_value_at_index(const Array *array, unsigned index) {
-    return (index >= array->size) ? -1 : (int) array->values[index];
+    return (index >= array->size) ? NO_VALUE : array->values[index];
 }
 
 /**
