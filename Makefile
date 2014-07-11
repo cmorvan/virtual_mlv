@@ -36,7 +36,7 @@ else
 endif
 
 ifeq ($(DEBUG), yes)
-    CFLAGS += -Wall -Wextra -std=c89 -pedantic
+    CFLAGS += -Wall -Wextra -std=c89 -pedantic -O0 -g
 else
     CFLAGS += -O2 -DNDEBUG
 endif
