@@ -20,130 +20,172 @@
  *
  *************************************************************************** */
 
+#include "mystack.h"
 #include <stdio.h>
 #include <stdlib.h>
-#define STACK_SIZE 128
-
-typedef struct ST{
-    int v_stack[STACK_SIZE];
-    struct ST* Snext;
-} stack;
-
-static int occstack = STACK_SIZE;
-static int stack_depth = -1;
-static stack * the_stack;
+#include <string.h>
 
 extern int base;
 
-int create_new_stack(void) {
-    stack *s;
-    
-    s = malloc(sizeof(*s));
-    if (!s) {
+/**
+ * A simple stack structure.
+ */
+typedef struct Stack {
+    int *values; /**< The values held by the stack. */
+    int size; /**< The current number of values. */
+    int capacity; /**< The number of values that can be held by the stack. */
+} Stack;
+
+static Stack *stack;
+
+static const int INITIAL_CAPACITY = 128;
+
+static int new_stack(void);
+static int double_capacity(void);
+static int stack_addr_is_valid(int);
+
+/**
+ * Creates a new stack.
+ * @return 0 upon success or 1 if an error occurs.
+ */
+static int new_stack(void) {
+    stack = malloc(sizeof(*stack));
+    if (!stack) {
         perror("malloc");
         return 1;
     }
-    s->Snext = the_stack;
-    occstack = 0;
-    the_stack = s;
-    stack_depth++;
+    stack->size = 0;
+    stack->capacity = INITIAL_CAPACITY;
+    stack->values = calloc(stack->capacity, sizeof(*stack->values));
+    if (!stack->values) {
+        free(stack);
+        perror("calloc");
+        return 1;
+    }
     return 0;
 }
 
-int delete_a_stack(void) {
-    stack *s;
+/**
+ * Doubles the capacity of the stack.
+ * @return 0 upon success or 1 if reallocation failed.
+ */
+static int double_capacity(void) {
+    int *tmp;
     
-    if (the_stack == NULL) {
+    stack->capacity *= 2;
+    tmp = realloc(stack->values, stack->capacity * sizeof(*stack->values));
+    if (!tmp) {
+        free(stack->values);
+        perror("realloc");
         return 1;
     }
-    s = the_stack->Snext;
-    free(the_stack);
-    the_stack = s;
-    stack_depth--;
-    /* Correcting deletion bug */
-    occstack = STACK_SIZE;
+    stack->values = tmp;
+    memset(stack->values + stack->size, 0,
+           (stack->capacity - stack->size) * sizeof(*stack->values));
     return 0;
 }
 
+/**
+ * Indicates whether a stack address is valid or not.
+ * @param stack_addr The stack address whose validity is to be checked.
+ * @return 1 if the stack address is valid, otherwise 0.
+ */
+static int stack_addr_is_valid(int stack_addr) {
+    return stack != NULL && stack_addr >= 0 && stack_addr < stack->size;
+}
+
+/**
+ * Frees the stack.
+ * @return Always 0.
+ */
 int free_stack(void) {
-    while (delete_a_stack() == 0);
+    /* Freeing a NULL pointer is perfectly fine, nothing happens. */
+    free(stack ? stack->values : NULL);
+    free(stack);
     return 0;
 }
 
-int push(int val) {
-    if (occstack == STACK_SIZE) {
-        if (create_new_stack()) {
-            return 1;
-        }
-    }
-    the_stack->v_stack[occstack++] = val;
-    return 0;
-}
-
-int pop(int *val) {
-    if (occstack == 0) {
-        if (delete_a_stack()) {
-            return 1;
-        }
-    }
-    if (val != NULL)
-        *val = the_stack->v_stack[occstack - 1];
-    occstack--;
-    return 0;
-}
-
-int dirload(int i, int *val) {
-    stack *s = the_stack;
-    int st = stack_depth;
-    while (s != NULL && st * STACK_SIZE > i) {
-        s = s->Snext;
-        st--;
-    }
-    if (s == NULL) {
+/**
+ * Pushes a value onto the stack.
+ * @param value The value to be pushed onto the stack.
+ * @return 0 upon success or 1 if an memory error occurs.
+ */
+int push(int value) {
+    if (!stack && new_stack()) {
         return 1;
     }
-    if (st == stack_depth && i % STACK_SIZE >= occstack) {
+    if (stack->size == stack->capacity && double_capacity()) {
         return 1;
     }
-    *val = s->v_stack[i % STACK_SIZE];
+    stack->values[stack->size++] = value;
     return 0;
 }
 
-int dirsave(int i, int val) {
-    stack *s = the_stack;
-    int st = stack_depth;
-    while (s != NULL && st * STACK_SIZE > i) {
-        s = s->Snext;
-        st--;
-    }
-    if (s == NULL) {
+/**
+ * Pops a value from the stack.
+ * @param to The pointer to the location (NULL if the value is to be discarded).
+ * @return 0 upon success or 1 if the stack is empty.
+ */
+int pop(int *to) {
+    if (stack->size <= 0) {
         return 1;
     }
-    if (st == stack_depth && i % STACK_SIZE >= occstack) {
-        return 1;
+    stack->size--;
+    if (to) {
+        *to = stack->values[stack->size];
     }
-    s->v_stack[i % STACK_SIZE] = val;
     return 0;
 }
 
+/**
+ * Displays the stack.
+ * @return Always 0.
+ */
 int display_stack(void) {
-    stack *s = the_stack;
-    int i = occstack - 1;
-    int st = stack_depth;
-    while (s != NULL) {
-        for (; i >= 0; i--) {
-            printf("%d\n", s->v_stack[i]);
-            if (base == st * STACK_SIZE + i) {
-                printf("____\n");
-            }
+    int i;
+    for (i = stack->size - 1; i >= 0; i--) {
+        printf("%d\n", stack->values[i]);
+        if (i == base) {
+            printf("____\n");
         }
-        i = STACK_SIZE - 1;
-        s = s->Snext;
-        st--;
     }
     return 0;
 }
 
+/**
+ * Returns the size of the stack.
+ * @return The size of the stack.
+ */
 int stack_size(void) {
-    return occstack + stack_depth * STACK_SIZE;
+    return stack->size;
+}
+
+/**
+ * Loads a value from the stack.
+ * @param stack_addr The stack address of the value to be loaded.
+ * @param into The destination of the value loaded from the stack.
+ * @return 0 upon success or 1 if the stack or @p into are @p NULL or if the
+ *         stack address is not valid.
+ */
+int dirload(int stack_addr, int *into) {
+    if (!stack || !into || !stack_addr_is_valid(stack_addr)) {
+        return 1;
+    }
+    *into = stack->values[stack_addr];
+    return 0;
+}
+
+/**
+ * Saves a value into the stack.
+ * @param value The value to be saved into the stack.
+ * @param stack_addr The stack address of the value to be saved.
+ * @return 0 upon success or 1 if the stack is @p NULL or the stack address is
+ *         invalid.
+ */
+int dirsave(int stack_addr, int value) {
+    if (!stack || !stack_addr_is_valid(stack_addr)) {
+        return 1;
+    }
+    stack->values[stack_addr] = value;
+    return 0;
 }

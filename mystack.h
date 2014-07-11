@@ -20,8 +20,8 @@
  *
  *************************************************************************** */
 
-#ifndef MYSTACK_H
-#define MYSTACK_H
+#ifndef STACK_H
+#define STACK_H
 
 int push(int);
 int pop(int *);
@@ -31,4 +31,4 @@ int display_stack(void);
 int stack_size(void);
 int free_stack(void);
 
-#endif /* MYSTACK_H */
+#endif /* STACK_H */
