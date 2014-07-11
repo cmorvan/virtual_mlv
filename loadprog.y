@@ -30,7 +30,8 @@
 /* Loadprog() error codes. */
 #define SYNTAX_ERROR  -1
 #define NOMEM_ERROR   -2
-#define NO_PROG_ERROR -3
+#define NOPROG_ERROR  -3
+#define NOLABEL_ERROR -4
 
 /* Flex and Bison declarations. */
 int yylval;
@@ -154,9 +155,9 @@ static void free_list(List *list) {
 }
 
 /**
- * Prints an error message according to the value returned by the @p loadprog
+ * Prints an error message according to a status value set by the @p loadprog
  * function or does nothing if there was no error.
- * @param errno The error code returned by the @p loadprog function.
+ * @param errno The error code set by the @p loadprog function.
  */
 static void print_load_error(int errno) {
     if (errno) {
@@ -170,8 +171,11 @@ static void print_load_error(int errno) {
     case NOMEM_ERROR:
         fprintf(stderr, "memory exhausted\n");
         break;
-    case NO_PROG_ERROR:
+    case NOPROG_ERROR:
         fprintf(stderr, "no instructions found\n");
+        break;
+    case NOLABEL_ERROR:
+        fprintf(stderr, "jump or call to a non-existant label\n");
         break;
     default:
         fprintf(stderr, "%d lexical/syntactic/semantic ", nerr);
@@ -210,7 +214,7 @@ int loadprog(FILE *input) {
         goto end;
     }
     if (prog_length == 0) {
-        status = NO_PROG_ERROR;
+        status = NOPROG_ERROR;
         goto end;
     }
     /* The code segment (from vm.c). */
@@ -234,6 +238,12 @@ int loadprog(FILE *input) {
             switch (l->instruction.opcode) {
             case VM_CALL: case VM_JUMP: case VM_JUMPF:
                 prog[--i] = get_value_at_index(labels, l->instruction.arg);
+                if (prog[i] == NO_VALUE) {
+                    status = NOLABEL_ERROR;
+                    fprintf(stderr, "There does not exist a label %d\n",
+                            l->instruction.arg);
+                    /* No goto here to discover other non-existant labels. */
+                }
                 break;
             default:
                 prog[--i] = l->instruction.arg;
