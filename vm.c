@@ -21,7 +21,7 @@
  *************************************************************************** */
 
 
-#include "mystack.h"
+#include "stack.h"
 #include "vm.h"
 #include <errno.h>
 #include <limits.h>
