@@ -46,7 +46,7 @@ all: $(EXEC) clean
 doxycheck:
 	$(DOXYCHECK)
 
-$(EXEC): main.o opcode.o vm.o $(LOAD).o array.o lex.yy.o mystack.o
+$(EXEC): main.o opcode.o vm.o $(LOAD).o array.o lex.yy.o stack.o
 	$(CC) $(CFLAGS) -o $@ $^
 
 $(LOAD).c: $(LOAD).y
