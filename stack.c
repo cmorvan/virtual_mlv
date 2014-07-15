@@ -42,6 +42,7 @@ static const int INITIAL_CAPACITY = 128;
 
 static int new_stack(void);
 static int double_capacity(void);
+static int fill(int *, int, int, int);
 static int stack_addr_is_valid(int);
 
 /**
@@ -80,14 +81,13 @@ static int double_capacity(void) {
         return 1;
     }
     stack->values = tmp;
-    memset(stack->values + stack->size, 0,
-           (stack->capacity - stack->size) * sizeof(*stack->values));
+    fill(stack->values, 0, stack->size, stack->capacity);
     return 0;
 }
 
 /**
  * Indicates whether a stack address is valid or not.
- * @param stack_addr The stack address whose validity is to be checked.
+ * @param stack_addr The stack address whose validity has to be checked.
  * @return 1 if the stack address is valid, otherwise 0.
  */
 static int stack_addr_is_valid(int stack_addr) {
@@ -187,5 +187,28 @@ int dirsave(int stack_addr, int value) {
         return 1;
     }
     stack->values[stack_addr] = value;
+    return 0;
+}
+
+/**
+ * Fills an array with a specified value from a start index, inclusive, to an
+ * end index, exclusive.
+ * @param array The array to be filled.
+ * @param value The value to be stored in all elements of the array.
+ * @param from The index of the first element (inclusive) to be filled with the
+ *             specified value.
+ * @param to The index of the last element (exclusive) to be filled with the
+ *           specified value.
+ * @return 0 upon success otherwise 1 if the indices are not valid.
+ */
+static int fill(int *array, int value, int from, int to) {
+    int i;
+    
+    if (from > to || from < 0 || to > stack->capacity) {
+        return 1;
+    }
+    for (i = from; i < to; i++) {
+        array[i] = value;
+    }
     return 0;
 }
