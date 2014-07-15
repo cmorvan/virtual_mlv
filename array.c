@@ -40,6 +40,8 @@ struct Array {
     size_t size; /**< The size of the array. */
 };
 
+static int fill(int *, int, size_t, size_t);
+
 /**
  * Allocates enough memory space for a dynamic array.
  * @return The newly allocated dynamic array or NULL if an error occurs.
@@ -59,7 +61,10 @@ Array *new_array(void) {
         perror("calloc");
         return NULL;
     }
-    memset(array->values, NO_VALUE, array->size * sizeof(*array->values));
+    if (fill(array->values, NO_VALUE, 0, array->size)) {
+        free_array(array);
+        return NULL;
+    }
     return array;
 }
 
@@ -84,12 +89,9 @@ int add_value_at_index(Array *array, unsigned value, unsigned index) {
         }
         array->values = tmp;
     }
-    /*
-     * Zeroing memory space between the old size and the new one to be
-     * consistent with our implementation of new_array() that uses calloc().
-     */
-    memset(array->values + old_size, NO_VALUE,
-           (array->size - old_size) * sizeof(*array->values));
+    if (fill(array->values, NO_VALUE, old_size, array->size)) {
+        return 1;
+    }
     array->values[index] = value;
     return 0;
 }
@@ -109,4 +111,27 @@ int get_value_at_index(const Array *array, unsigned index) {
 void free_array(Array *array) {
     free(array->values);
     free(array);
+}
+
+/**
+ * Fills an array with a specified value from a start index, inclusive, to an
+ * end index, exclusive.
+ * @param array The array to be filled.
+ * @param value The value to be stored in all elements of the array.
+ * @param from The index of the first element (inclusive) to be filled with the
+ *             specified value.
+ * @param to The index of the last element (exclusive) to be filled with the
+ *           specified value.
+ * @return 0 upon success or 1 if @p from > @p to.
+ */
+static int fill(int *array, int value, size_t from, size_t to) {
+    size_t i;
+    
+    if (from > to) {
+        return 1;
+    }
+    for (i = from; i < to; i++) {
+        array[i] = value;
+    }
+    return 0;
 }
