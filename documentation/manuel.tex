@@ -4,6 +4,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{fullpage}
 \usepackage{amssymb}
+\usepackage{hyperref}
 
 \title{Machine virtuelle de l'université de Marne-la-Vallée}
 \author{Cours de compilation L3}
@@ -27,7 +28,7 @@
 % <http://www.gnu.org/licenses/>.
 % 
 % 
-% Authors: S. Lombardy, N. Bedon, C. Morvan
+% Authors: S. Lombardy, N. Bedon, C. Morvan, W. Hay
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -38,7 +39,7 @@
 \section{Introduction}
 
 Dans le cadre du cours de compilation du L3 informatique de
-l'université de Marne-la-Vallée, le langage cible est celui d'une {\em
+l'université de Marne-la-Vallée, nous utiliserons une {\em
   machine virtuelle}. Il s'agit d'une machine abstraite à pile.  Elle
 est composée de:
 \begin{itemize}
@@ -74,8 +75,8 @@ courante.
 Le langage de la machine virtuelle est très simple. Chaque ligne
 contient une commande et, éventuellement un
 argument (entier) pour cette commande.
-Les commentaires sont introduits par \# et durent jusqu'à la fin de la
-ligne courante.
+Les commentaires sont introduits par {\tt \#} et durent jusqu'à la
+fin de la ligne courante.
 
 Les commandes sans argument acceptées par la machine virtuelle sont
 représentés sur la Figure~\ref{fig:instruct}, celles possédant un
@@ -84,17 +85,18 @@ argument, sur la Figure~\ref{fig:instructarg}
 \begin{figure}
   \centering
   \begin{tabular}{lll}
+    NOP   &:& Ne fait rien du tout\\
     NEG   &:& {\tt reg1}$\leftarrow-${\tt reg1}\\
     ADD   &:& {\tt reg1}$\leftarrow${\tt reg1}$+${\tt reg2}\\
     SUB   &:& {\tt reg1}$\leftarrow${\tt reg1}$-${\tt reg2}\\
-    MULT  &:& {\tt reg1}$\leftarrow${\tt reg1}$*${\tt reg2}\\
+    MUL   &:& {\tt reg1}$\leftarrow${\tt reg1}$*${\tt reg2}\\
     DIV   &:& {\tt reg1}$\leftarrow${\tt reg1}$/${\tt reg2}\\
     MOD   &:& {\tt reg1}$\leftarrow${\tt reg1}$\%${\tt reg2}\\
     EQUAL &:& {\tt reg1}$\leftarrow${\tt reg1}$=${\tt reg2}\\
     NOTEQ &:& {\tt reg1}$\leftarrow${\tt reg1}$\neq${\tt reg2}\\
-    LOW   &:& {\tt reg1}$\leftarrow${\tt reg1}$<${\tt reg2}\\
+    LESS  &:& {\tt reg1}$\leftarrow${\tt reg1}$<${\tt reg2}\\
     LEQ   &:& {\tt reg1}$\leftarrow${\tt reg1}$\leqslant${\tt reg2}\\
-    GREAT &:& {\tt reg1}$\leftarrow${\tt reg1}$>${\tt reg2}\\
+    GREATER &:& {\tt reg1}$\leftarrow${\tt reg1}$>${\tt reg2}\\
     GEQ   &:& {\tt reg1}$\leftarrow${\tt reg1}$\geqslant${\tt reg2}\\
     PUSH  &:& Place la valeur de {\tt reg1} sur la pile\\
     POP   &:& Place la valeur en tête de pile dans {\tt reg1} et dépile\\
@@ -112,6 +114,7 @@ argument, sur la Figure~\ref{fig:instructarg}
     {\tt reg1}$+${\tt base} de la pile\\
     SAVE &:& Stocke la valeur de {\tt reg1} à l'adresse {\tt reg2} de la pile\\
     SAVER&:& Stocke la valeur de {\tt reg1} à l'adresse {\tt base}$+${\tt reg2} de la pile\\
+    TOPST &:& Place dans {\tt reg1} la position courante du sommet de la pile
   \end{tabular}
   
   \caption{Instructions de la machine virtuelle}
@@ -137,8 +140,8 @@ argument, sur la Figure~\ref{fig:instructarg}
 \end{figure}
 
 Après chaque instruction, on passe à l'instruction suivante
-(incrémentation du registre {\tt counter}), exceptée
-pour les instruction {\tt JUMP}, {\tt JUMPF} et {\tt CALL} qui
+(incrémentation du registre {\tt counter}), excepté
+pour les instructions {\tt JUMP}, {\tt JUMPF} et {\tt CALL} qui
 induisent explicitement un branchement dans le segment de code
 et l'instruction {\tt RETURN} qui provoque un branchement dépendant
 des instructions stockées lors de l'activation de la fonction.
@@ -149,7 +152,7 @@ des instructions dans le segment de code.
 
 L'appel de {\tt CALL} provoque l'empilement successif d'un pointeur
 indiquant quelle instruction exécuter au
-retour de la fonction, et de {\tt base}. A la suite de quoi,
+retour de la fonction, et de {\tt base}. À la suite de quoi,
 {\tt base} est mis à jour pour pointer sur le sommet de la pile
 d'exécution
 qui correspondra au début de la zone dédiée à la fonction appelée.
@@ -169,7 +172,7 @@ adresse relative sera alors située entre $-n-2$ et $-3$, les
 emplacements d'adresse respective $-2$ et $-1$ étant occupés par les
 informations nécessaires à la restauration de {\tt counter} et
 {\tt base} lors du retour de la fonction.  La valeur de retour pourra
-elle être placée dans {\tt reg1}. Une autre option peut-être de lui
+elle être placée dans {\tt reg1}. Une autre option peut être de lui
 réserver, par convention le premier espace de la pile.
 
 %\newpage
@@ -182,14 +185,14 @@ Exemple de code accepté par la machine virtuelle:
         SET     8       #reg1 := 8
         SWAP            #reg2 := 8
         POP             #reg1 := 4
-        LOW             #reg1 := 4<8
+        LESS            #reg1 := 4<8
         JUMPF   0       #goto 0 si reg1=0
         SET     3       #reg1 := 3
         PUSH            #push 3
         SET     5       #reg1 := 5
         SWAP            #reg2 := 5
         POP             #reg1 := 3
-        LOW             #reg1 := 3<5
+        LESS            #reg1 := 3<5
         JUMPF   1       #goto 1 si reg1=0
         SET     4       #reg1 := 4
         PUSH            #push 4
@@ -205,7 +208,7 @@ Exemple de code accepté par la machine virtuelle:
         SET     5       #reg1 := 5
         SWAP            #reg2 := 5
         POP             #reg1 := 12 
-        LOW             #reg1 := 12<5
+        LESS            #reg1 := 12<5
         JUMPF   2       #goto 2 si reg1=0
         SET     97
         WRITE           #---affichage 97

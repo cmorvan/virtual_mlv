@@ -1,18 +1,18 @@
-This software is a very simple implementation of a virtual (single
-stack) machine.
+This software is a very simple implementation of a virtual (single stack)
+machine.
 
-It has been developed at université de Marne la Vallée, by Sylvain
-Lombardy. Afertwards, it has been modified by Nicolas Bedon and
-Christophe Morvan. Gaël Fuhs has contributed a nice implementation of
-a dynamic array, in order to remove the hard coded 100 label
-limit. Further, Wuthy Hay has performed improvements on some
-pieces of code (relative to dynamic arrays).
+It was originally written by Sylvain Lombardy at UniversitÃ© Paris-Est
+Marne-la-VallÃ©e (UPEM). Afterwards, it has been modified by Nicolas Bedon and
+Christophe Morvan. GaÃ«l Fuhs has contributed a nice implementation of a dynamic
+array, in order to remove the hard coded 100 label limit. Further, Wuthy Hay has
+performed improvements on the entire code base. Recently, Quentin Campos and
+Jefferson Mangue have modified the grammar to get rid of the 10000 LOC limit.
 
 Currently this software is maintained by Christophe Morvan.
 
 http://www-igm.univ-mlv.fr/~cmorvan/index.php
 
-Most of the comments and documentation are written in French, and are
-intended for computer science students at université de Marne la
-Vallée. These software and documentation are provided under General
-Public Licence v3 (see COPYING). 
+Most of the comments and documentation are written in French, and are intended
+for computer science students at UniversitÃ© Paris-Est Marne-la-VallÃ©e. These
+software and documentation are provided under General Public Licence v3 (see
+COPYING).

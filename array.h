@@ -21,30 +21,16 @@
  *
  *************************************************************************** */
 
-/* ***************************************************************************
- *	dynArray.h
- * 
- * This file contains functions enabling to allocate strictly
- * positive integers into a dynamically allocated array.
- *
- * newDynArray: creation
- * addValue: write
- * getValue: retrieve -- -1 when there is some error
- * freeArray: free allocated space.
- * 
- *************************************************************************** */
+#ifndef ARRAY_H
+#define ARRAY_H
 
-#ifndef DYNARRAY_H
-#define DYNARRAY_H
+extern const int NO_VALUE;
 
-typedef struct struct_dynArray{
-  int* dynArray;
-  int size;
-}dynArray;
+typedef struct Array Array;
 
-dynArray newDynArray();
-void addValue(dynArray * , int key ,int value );
-int getValue(dynArray * , int);
-void freeArray(dynArray *);
+Array *new_array(void);
+int add_value_at_index(Array *, unsigned, unsigned);
+int get_value_at_index(const Array *, unsigned);
+void free_array(Array *);
 
-#endif
+#endif /* ARRAY_H */
