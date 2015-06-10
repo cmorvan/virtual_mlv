@@ -129,9 +129,8 @@ argument, sur la Figure~\ref{fig:instructarg}
     JUMP  &$n$&:& Branchement à l'emplacement du label $n$ dans le segment de code\\
     JUMPF &$n$&:& Branchement à l'emplacement du label $n$ dans le segment de code\\
     &&& si {\tt reg1} vaut $0$\\
-    ALLOC &$n$&:& Alloue $n$ emplacements supplémentaires en tête de
-    pile\\
-    FREE  &$n$&:& Libère $n$ emplacements en tête de pile\\
+    ALLOC &$n$&:& Effectue $n$ PUSH $0$ \\
+    FREE  &$n$&:& Effectue $n$ POP\\
     CALL  &$n$&:& Sauvegarde l'état de la machine dans la pile et effectue \\
     &&& un branchement à l'emplacement du label $n$ dans le segment de code\\
   \end{tabular}
