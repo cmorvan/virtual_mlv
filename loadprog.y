@@ -63,7 +63,7 @@ extern int *prog;
 int prog_length = 0;
 
 /** The list of instructions. */
-static List *list = NULL;
+static List *instructions = NULL;
 
 /** The number of lexical/syntactic/semantic errors. */
 int nerr = 0;
@@ -93,12 +93,12 @@ input : input line {}
 
 line : EOL {}
      | COM1 EOL {
-         list = new_list(list);
-         if (!list) {
+         instructions = new_list(instructions);
+         if (!instructions) {
              return 2;
          }
-         list->instruction.opcode = $1;
-         list->instruction.has_arg = 0;
+         instructions->instruction.opcode = $1;
+         instructions->instruction.has_arg = 0;
          prog_length++;
      }
      | COM2 NUM EOL {
@@ -108,13 +108,13 @@ line : EOL {}
                 "argument but is here used with %d\n",
                 yylineno, opcode_to_string($1), $2);
          }
-         list = new_list(list);
-         if (!list) {
+         instructions = new_list(instructions);
+         if (!instructions) {
              return 2;
          }
-         list->instruction.opcode = $1;
-         list->instruction.arg = $2;
-         list->instruction.has_arg = 1;
+         instructions->instruction.opcode = $1;
+         instructions->instruction.arg = $2;
+         instructions->instruction.has_arg = 1;
          prog_length += 2;
      }
      | LBL NUM EOL {
@@ -192,7 +192,7 @@ int endprog(int status) {
         print_load_error(status);
     }
     free_array(labels);
-    free_list(list);
+    free_list(instructions);
     yylex_destroy();
     return status != 0;
 }
@@ -240,7 +240,7 @@ int loadprog(FILE *input) {
      * The list traversal is done normally but the code is loaded into the code
      * segment in the reverse order.
      */
-    for (l = list, i = prog_length; l != NULL; l = l->next) {
+    for (l = instructions, i = prog_length; l != NULL; l = l->next) {
         if (l->instruction.has_arg) {
             switch (l->instruction.opcode) {
             case VM_CALL: case VM_JUMP: case VM_JUMPF:
