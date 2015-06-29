@@ -179,11 +179,13 @@ int reduce_stack(int size) {
  */
 int display_stack(void) {
     int i;
-    for (i = stack->size - 1; i >= 0; i--) {
-        printf("%d\n", stack->values[i]);
-        if (i == base) {
-            printf("____\n");
-        }
+    if (stack) {
+		for (i = stack->size - 1; i >= 0; i--) {
+			printf("%d\n", stack->values[i]);
+			if (i == base) {
+				printf("____\n");
+			}
+		}
     }
     return 0;
 }
