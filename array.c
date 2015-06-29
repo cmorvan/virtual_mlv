@@ -40,7 +40,7 @@ struct Array {
     size_t size; /**< The size of the array. */
 };
 
-static int fill(int *, int, size_t, size_t);
+static void fill(int *array, int value, size_t from, size_t to);
 
 /**
  * Allocates enough memory space for a dynamic array.
@@ -58,13 +58,10 @@ Array *new_array(void) {
     array->values = malloc(array->size * sizeof(*array->values));
     if (!array->values) {
         free(array);
-        perror("calloc");
+        perror("malloc");
         return NULL;
     }
-    if (fill(array->values, NO_VALUE, 0, array->size)) {
-        free_array(array);
-        return NULL;
-    }
+    fill(array->values, NO_VALUE, 0, array->size);
     return array;
 }
 
@@ -75,23 +72,26 @@ Array *new_array(void) {
  * @param index The desired position in the array for the value to be added.
  * @return 0 if the value was successfully added, otherwise 1.
  */
-int add_value_at_index(Array *array, unsigned value, unsigned index) {
+int add_value_at_index(Array *array, unsigned int value, unsigned int index) {
     int *tmp;
-    size_t old_size = array->size;
+    size_t new_size;
     
-    while (index > array->size) {
-        array->size *= 2;
-        tmp = realloc(array->values, array->size * sizeof(*array->values));
-        if (!tmp) {
-            free(array->values);
-            perror("realloc");
-            return 1;
-        }
-        array->values = tmp;
+    if (index >= array->size) {
+    	new_size = array->size * 2;
+    	if (new_size < index) {
+    		new_size = index;
+    	}
+
+    	if (!(tmp = realloc(array->values, new_size * sizeof(*array->values)))) {
+    		perror("realloc");
+    		return 1;
+    	}
+
+    	array->values = tmp;
+        fill(array->values, NO_VALUE, array->size, new_size);
+    	array->size = new_size;
     }
-    if (fill(array->values, NO_VALUE, old_size, array->size)) {
-        return 1;
-    }
+
     array->values[index] = value;
     return 0;
 }
@@ -100,7 +100,7 @@ int add_value_at_index(Array *array, unsigned value, unsigned index) {
  * Returns the value in the array at the given index.
  * @return The value in the array or NO_VALUE if the index was out of bounds.
  */
-int get_value_at_index(const Array *array, unsigned index) {
+int get_value_at_index(const Array *array, unsigned int index) {
     return (index >= array->size) ? NO_VALUE : array->values[index];
 }
 
@@ -122,16 +122,10 @@ void free_array(Array *array) {
  *             specified value.
  * @param to The index of the last element (exclusive) to be filled with the
  *           specified value.
- * @return 0 upon success or 1 if @p from > @p to.
  */
-static int fill(int *array, int value, size_t from, size_t to) {
+static void fill(int *array, int value, size_t from, size_t to) {
     size_t i;
-    
-    if (from > to) {
-        return 1;
-    }
     for (i = from; i < to; i++) {
         array[i] = value;
     }
-    return 0;
 }
