@@ -93,25 +93,29 @@ input : input line {}
 
 line : EOL {}
      | COM1 EOL {
-         instructions = new_list(instructions);
-         if (!instructions) {
+    	 List *tmp = new_list(instructions);
+         if (!tmp) {
              return 2;
          }
+
+         instructions = tmp;
          instructions->instruction.opcode = $1;
          instructions->instruction.has_arg = 0;
          prog_length++;
      }
      | COM2 NUM EOL {
+    	 List *tmp;
          if ($1 != VM_SET && $2 < 0) {
              nerr++;
              fprintf(stderr, "line %d: %s expects an unsigned integer as "
                 "argument but is here used with %d\n",
                 yylineno, opcode_to_string($1), $2);
          }
-         instructions = new_list(instructions);
-         if (!instructions) {
+         tmp = new_list(instructions);
+         if (!tmp) {
              return 2;
          }
+         instructions = tmp;
          instructions->instruction.opcode = $1;
          instructions->instruction.arg = $2;
          instructions->instruction.has_arg = 1;
@@ -191,8 +195,8 @@ int endprog(int status) {
     if (status) {
         print_load_error(status);
     }
-    free_array(labels);
     free_list(instructions);
+    free_array(labels);
     yylex_destroy();
     return status != 0;
 }
