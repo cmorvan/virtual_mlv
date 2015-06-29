@@ -54,7 +54,7 @@ struct List {
 };
 
 /** The dynamic array of labels. */
-static Array *labels;
+static Array *labels = NULL;
 
 /** The code segment. */
 extern int *prog;
@@ -63,7 +63,7 @@ extern int *prog;
 int prog_length = 0;
 
 /** The list of instructions. */
-static List *list;
+static List *list = NULL;
 
 /** The number of lexical/syntactic/semantic errors. */
 int nerr = 0;
