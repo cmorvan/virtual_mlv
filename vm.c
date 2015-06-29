@@ -447,12 +447,9 @@ static int vm_return(void) {
  * @return 0 upon success or 1 if a stack overflow occurs.
  */
 static int vm_alloc(int n) {
-    int i;
-    for (i = 0; i < n; i++) {
-        if (push(0)) {
-            fprintf(stderr, "ALLOC: stack overflow\n");
-            return 1;
-        }
+    if (extend_stack(n)) {
+        fprintf(stderr, "ALLOC: stack overflow\n");
+        return 1;
     }
     return 0;
 }
@@ -463,12 +460,9 @@ static int vm_alloc(int n) {
  * @return 0 upon success or 1 if the stack is empty.
  */
 static int vm_free(int n) {
-    int i;
-    for (i = 0; i < n; i++) {
-        if (pop(NULL)) {
-            fprintf(stderr, "FREE: stack empty\n");
-            return 1;
-        }
+    if (reduce_stack(n)) {
+        fprintf(stderr, "FREE: stack empty\n");
+        return 1;
     }
     return 0;
 }
