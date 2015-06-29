@@ -127,6 +127,12 @@ line : EOL {}
              fprintf(stderr, "line %d: LABEL expects an unsigned integer as "
                 "argument but is here used with %d\n", yylineno, $2);
          } else {
+        	 /* Check whether the label has already been declared. */
+        	 if (get_value_at_index(labels, (unsigned int)$2) >= 0) {
+                 fprintf(stderr, "line %d: Warning: label %d has already been declared.\n",
+                    yylineno, $2);
+        	 }
+
              /* The casts are safe since both integers are strictly positive. */
              add_value_at_index(labels, (unsigned) prog_length, (unsigned) $2);
          }
