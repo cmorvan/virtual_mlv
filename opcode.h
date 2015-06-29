@@ -57,6 +57,7 @@ typedef enum Opcode {
     VM_READCH,
     VM_WRITECH,
     VM_TOPST,
+	VM_BASER,
     
     /* With one argument. */
     VM_SET,

@@ -84,6 +84,7 @@ static int vm_free(int);
 static int vm_push(void);
 static int vm_pop(void);
 static int vm_topst(void);
+static int vm_baser(void);
 
 /**
  * Does nothing at all.
@@ -267,6 +268,15 @@ static int vm_saver(void) {
         return 1;
     }
     return 0;
+}
+
+/**
+ * Places the value of the base register in reg1.
+ * @return Always 0.
+ */
+static int vm_baser(void) {
+	reg1 = base;
+	return 0;
 }
 
 /**
@@ -563,6 +573,7 @@ int vm_execute(void) {
         case VM_ALLOC:      vm_alloc(prog[prog_counter++]); break;
         case VM_FREE:       vm_free(prog[prog_counter++]);  break;
         case VM_TOPST:      vm_topst();     break;
+        case VM_BASER:		vm_baser();		break;
                 
         /*
          * These values cannot be loaded into our program nor be really matched.

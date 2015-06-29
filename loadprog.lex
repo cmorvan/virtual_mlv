@@ -54,6 +54,9 @@ NUMBER -?[0-9]+
 "GEQ"       { yylval = VM_GEQ;      return COM1; }
 "GREATER"   { yylval = VM_GREATER;  return COM1; }
 
+"TOPST"     { yylval = VM_TOPST;    return COM1; }
+"BASER"		{ yylval = VM_BASER;	return COM1; }
+
 "SWAP"      { yylval = VM_SWAP;     return COM1; }
 "PUSH"      { yylval = VM_PUSH;     return COM1; }
 "POP"       { yylval = VM_POP;      return COM1; }
@@ -75,7 +78,6 @@ NUMBER -?[0-9]+
 "ALLOC"     { yylval = VM_ALLOC;    return COM2; }
 "FREE"      { yylval = VM_FREE;     return COM2; }
 "HALT"      { yylval = VM_HALT;     return COM1; }
-"TOPST"     { yylval = VM_TOPST;    return COM1; }
 [ \t] ;
 "#".* ;
 "\n"        return EOL;

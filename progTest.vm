@@ -48,6 +48,8 @@
     LABEL   2
     HALT
     LABEL   3
+    BASER
+    WRITE
     SET     55
     WRITE
     RETURN

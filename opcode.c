@@ -68,6 +68,7 @@ const char *opcode_to_string(Opcode opcode) {
     case VM_FREE:       return "FREE";
     case VM_LABEL:      return "LABEL";
     case VM_TOPST:      return "TOPST";
+    case VM_BASER:		return "BASER";
     case __VM_RESERVED: return "__RESERVED";
     }
     /* This part of the code is supposed to be unreachable. */
