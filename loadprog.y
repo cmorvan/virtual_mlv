@@ -185,6 +185,19 @@ static void print_load_error(int errno) {
 }
 
 /**
+ * Ends the program by checking if an error occurred and freeing the memory.
+ */
+int endprog(int status) {
+    if (status) {
+        print_load_error(status);
+    }
+    free_array(labels);
+    free_list(list);
+    yylex_destroy();
+    return status != 0;
+}
+
+/**
  * Loads the program into the VM code segment by reading instructions from a
  * file.
  * @param input The input file which contains instructions.
@@ -197,32 +210,26 @@ int loadprog(FILE *input) {
     
     labels = new_array();
     if (!labels) {
-        status = NOMEM_ERROR;
-        goto end;
+    	return endprog(NOMEM_ERROR);
     }
     yyin = input;
     status = yyparse();
     if (status == 1) {
-        status = SYNTAX_ERROR;
-        goto end;
+    	return endprog(SYNTAX_ERROR);
     } else if (status == 2) {
-        status = NOMEM_ERROR;
-        goto end;
+    	return endprog(NOMEM_ERROR);
     }
     if (nerr) {
-        status = nerr;
-        goto end;
+    	return endprog(nerr);
     }
     if (prog_length == 0) {
-        status = NOPROG_ERROR;
-        goto end;
+    	return endprog(NOPROG_ERROR);
     }
     /* The code segment (from vm.c). */
     prog = calloc(prog_length, sizeof(*prog));
     if (!prog) {
         perror("calloc");
-        status = NOMEM_ERROR;
-        goto end;
+    	return endprog(NOMEM_ERROR);
     }
     /*
      * Insertions into the list are done by prepending. It means that
@@ -242,7 +249,7 @@ int loadprog(FILE *input) {
                     status = NOLABEL_ERROR;
                     fprintf(stderr, "There does not exist a label %d\n",
                             l->instruction.arg);
-                    /* No goto here to discover other non-existant labels. */
+                    /* Continue to discover other non-existent labels. */
                 }
                 break;
             default:
@@ -253,12 +260,5 @@ int loadprog(FILE *input) {
         prog[--i] = l->instruction.opcode;
     }
     
-end:
-    if (status) {
-        print_load_error(status);
-    }
-    free_array(labels);
-    free_list(list);
-    yylex_destroy();
-    return status != 0;
+    return endprog(status);
 }
