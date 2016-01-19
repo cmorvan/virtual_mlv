@@ -16,7 +16,7 @@
  * <http://www.gnu.org/licenses/>.
  *
  *
- *  Authors: S. Lombardy, N. Bedon, C. Morvan, G. Fuhs, W. Hay
+ *  Authors: S. Lombardy, N. Bedon, C. Morvan, G. Fuhs, W. Hay, C. Noël.
  *
  *************************************************************************** */
 
@@ -40,8 +40,8 @@ static Stack *stack;
 
 static const int INITIAL_CAPACITY = 128;
 
-static int new_stack(void);
-static int double_capacity(void);
+static int new_stack(int capacity_min);
+static int extend_capacity(int new_capacity);
 static int fill(int *, int, int, int);
 static int stack_addr_is_valid(int);
 
@@ -49,14 +49,14 @@ static int stack_addr_is_valid(int);
  * Creates a new stack.
  * @return 0 upon success or 1 if an error occurs.
  */
-static int new_stack(void) {
+static int new_stack(int capacity_min) {
     stack = malloc(sizeof(*stack));
     if (!stack) {
         perror("malloc");
         return 1;
     }
     stack->size = 0;
-    stack->capacity = INITIAL_CAPACITY;
+    stack->capacity = capacity_min;
     stack->values = calloc(stack->capacity, sizeof(*stack->values));
     if (!stack->values) {
         free(stack);
@@ -67,20 +67,20 @@ static int new_stack(void) {
 }
 
 /**
- * Doubles the capacity of the stack.
+ * Extends (or reduces) the capacity of the stack.
  * @return 0 upon success or 1 if reallocation failed.
  */
-static int double_capacity(void) {
+static int extend_capacity(int new_capacity) {
     int *tmp;
-    
-    stack->capacity *= 2;
-    tmp = realloc(stack->values, stack->capacity * sizeof(*stack->values));
+
+    tmp = realloc(stack->values, new_capacity * sizeof(*stack->values));
     if (!tmp) {
         free(stack->values);
         perror("realloc");
         return 1;
     }
     stack->values = tmp;
+    stack->capacity = new_capacity;
     fill(stack->values, 0, stack->size, stack->capacity);
     return 0;
 }
@@ -111,10 +111,10 @@ int free_stack(void) {
  * @return 0 upon success or 1 if an memory error occurs.
  */
 int push(int value) {
-    if (!stack && new_stack()) {
+    if (!stack && new_stack(INITIAL_CAPACITY)) {
         return 1;
     }
-    if (stack->size == stack->capacity && double_capacity()) {
+    if (stack->size == stack->capacity && extend_capacity(stack->capacity * 2)) {
         return 1;
     }
     stack->values[stack->size++] = value;
@@ -138,16 +138,54 @@ int pop(int *to) {
 }
 
 /**
+ * Extends the capacity of the stack (for big values, allows not to reallocate several successive times the stack).
+ * Values added on the stack are left uninitialized.
+ * @param size The number of blocs to add.
+ * @return 0 upon success or 1 if an memory error occurs.
+ */
+int extend_stack(int size) {
+	int required_cap = stack->size + size, new_size;
+	if (!stack && new_stack(size > INITIAL_CAPACITY ? size : INITIAL_CAPACITY)) {
+		return 1;
+	}
+
+	if (required_cap > stack->capacity) {
+		new_size = stack->capacity * 2;
+		if (extend_capacity(new_size > required_cap ? new_size : required_cap)) {
+			return 1;
+		}
+	}
+
+	stack->size += size;
+	return 0;
+}
+
+/**
+ * Removes a certain amount of blocs from the stack.
+ * @param size The number of blocs to remove .
+ * @return 0 upon success or 1 if an memory error occurs.
+ */
+int reduce_stack(int size) {
+	stack->size -= size;
+	if (stack->size < 0) {
+		return 1;
+	}
+    return 0;
+}
+
+/**
  * Displays the stack.
  * @return Always 0.
  */
 int display_stack(void) {
     int i;
-    for (i = stack->size - 1; i >= 0; i--) {
-        printf("%d\n", stack->values[i]);
-        if (i == base) {
-            printf("____\n");
-        }
+    if (stack) {
+		for (i = stack->size - 1; i >= 0; i--) {
+			printf("%d\n", stack->values[i]);
+			if (i == base) {
+				printf("____\n");
+			}
+		}
     }
     return 0;
 }

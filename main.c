@@ -16,7 +16,7 @@
  * <http://www.gnu.org/licenses/>.
  *
  *
- *  Authors: S. Lombardy, N. Bedon, C. Morvan, W. Hay
+ *  Authors: S. Lombardy, N. Bedon, C. Morvan, W. Hay, C. Noël.
  *
  *************************************************************************** */
 
@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
         perror("fopen");
         exit(EXIT_FAILURE);
     }
-    /* Using the fuction generated from loadprog.y. */
+    /* Using the function generated from loadprog.y. */
     if (!loadprog(input)) {
         if (debug) {
             print_code_segment(prog, prog_length);

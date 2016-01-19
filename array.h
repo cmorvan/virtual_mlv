@@ -17,7 +17,7 @@
  * <http://www.gnu.org/licenses/>.
  *
  *
- *  Author: G. Fuhs, W. Hay, C. Morvan
+ *  Author: G. Fuhs, W. Hay, C. Morvan, C. Noël.
  *
  *************************************************************************** */
 
@@ -29,8 +29,8 @@ extern const int NO_VALUE;
 typedef struct Array Array;
 
 Array *new_array(void);
-int add_value_at_index(Array *, unsigned, unsigned);
-int get_value_at_index(const Array *, unsigned);
-void free_array(Array *);
+int add_value_at_index(Array *array, unsigned int value, unsigned int index);
+int get_value_at_index(const Array *array, unsigned int index);
+void free_array(Array *array);
 
 #endif /* ARRAY_H */

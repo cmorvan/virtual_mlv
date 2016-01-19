@@ -16,7 +16,8 @@
  * <http://www.gnu.org/licenses/>.
  *
  *
- *  Authors: S. Lombardy, N. Bedon, C. Morvan, W. Hay, Q. Campos, J. Mangue
+ *  Authors: S. Lombardy, N. Bedon, C. Morvan, W. Hay, Q. Campos, J. Mangue,
+ *  C. Noël.
  *
  *************************************************************************** */
 
@@ -84,6 +85,7 @@ static int vm_free(int);
 static int vm_push(void);
 static int vm_pop(void);
 static int vm_topst(void);
+static int vm_baser(void);
 
 /**
  * Does nothing at all.
@@ -270,6 +272,15 @@ static int vm_saver(void) {
 }
 
 /**
+ * Places the value of the base register in reg1.
+ * @return Always 0.
+ */
+static int vm_baser(void) {
+	reg1 = base;
+	return 0;
+}
+
+/**
  * Swaps values of @p reg1 and @p reg2.
  * @return Always 0.
  */
@@ -437,12 +448,9 @@ static int vm_return(void) {
  * @return 0 upon success or 1 if a stack overflow occurs.
  */
 static int vm_alloc(int n) {
-    int i;
-    for (i = 0; i < n; i++) {
-        if (push(0)) {
-            fprintf(stderr, "ALLOC: stack overflow\n");
-            return 1;
-        }
+    if (extend_stack(n)) {
+        fprintf(stderr, "ALLOC: stack overflow\n");
+        return 1;
     }
     return 0;
 }
@@ -453,12 +461,9 @@ static int vm_alloc(int n) {
  * @return 0 upon success or 1 if the stack is empty.
  */
 static int vm_free(int n) {
-    int i;
-    for (i = 0; i < n; i++) {
-        if (pop(NULL)) {
-            fprintf(stderr, "FREE: stack empty\n");
-            return 1;
-        }
+    if (reduce_stack(n)) {
+        fprintf(stderr, "FREE: stack empty\n");
+        return 1;
     }
     return 0;
 }
@@ -563,6 +568,7 @@ int vm_execute(void) {
         case VM_ALLOC:      vm_alloc(prog[prog_counter++]); break;
         case VM_FREE:       vm_free(prog[prog_counter++]);  break;
         case VM_TOPST:      vm_topst();     break;
+        case VM_BASER:		vm_baser();		break;
                 
         /*
          * These values cannot be loaded into our program nor be really matched.

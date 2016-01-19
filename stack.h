@@ -16,7 +16,7 @@
  * <http://www.gnu.org/licenses/>.
  *
  *
- *  Authors: S. Lombardy, N. Bedon, C. Morvan, W. Hay
+ *  Authors: S. Lombardy, N. Bedon, C. Morvan, W. Hay, C. Noël.
  *
  *************************************************************************** */
 
@@ -25,6 +25,8 @@
 
 int push(int);
 int pop(int *);
+int extend_stack(int size);
+int reduce_stack(int size);
 int dirload(int, int *);
 int dirsave(int, int);
 int display_stack(void);

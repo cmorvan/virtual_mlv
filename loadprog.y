@@ -17,7 +17,7 @@
  *
  *
  *  Authors: S. Lombardy, N. Bedon, C. Morvan, G. Fuhs, W. Hay, Q. Campos,
- *           J. Mangue
+ *           J. Mangue, C. Noël.
  *
  *************************************************************************** */
 
@@ -54,7 +54,7 @@ struct List {
 };
 
 /** The dynamic array of labels. */
-static Array *labels;
+static Array *labels = NULL;
 
 /** The code segment. */
 extern int *prog;
@@ -63,7 +63,7 @@ extern int *prog;
 int prog_length = 0;
 
 /** The list of instructions. */
-static List *list;
+static List *instructions = NULL;
 
 /** The number of lexical/syntactic/semantic errors. */
 int nerr = 0;
@@ -93,28 +93,32 @@ input : input line {}
 
 line : EOL {}
      | COM1 EOL {
-         list = new_list(list);
-         if (!list) {
+    	 List *tmp = new_list(instructions);
+         if (!tmp) {
              return 2;
          }
-         list->instruction.opcode = $1;
-         list->instruction.has_arg = 0;
+
+         instructions = tmp;
+         instructions->instruction.opcode = $1;
+         instructions->instruction.has_arg = 0;
          prog_length++;
      }
      | COM2 NUM EOL {
+    	 List *tmp;
          if ($1 != VM_SET && $2 < 0) {
              nerr++;
              fprintf(stderr, "line %d: %s expects an unsigned integer as "
                 "argument but is here used with %d\n",
                 yylineno, opcode_to_string($1), $2);
          }
-         list = new_list(list);
-         if (!list) {
+         tmp = new_list(instructions);
+         if (!tmp) {
              return 2;
          }
-         list->instruction.opcode = $1;
-         list->instruction.arg = $2;
-         list->instruction.has_arg = 1;
+         instructions = tmp;
+         instructions->instruction.opcode = $1;
+         instructions->instruction.arg = $2;
+         instructions->instruction.has_arg = 1;
          prog_length += 2;
      }
      | LBL NUM EOL {
@@ -123,6 +127,12 @@ line : EOL {}
              fprintf(stderr, "line %d: LABEL expects an unsigned integer as "
                 "argument but is here used with %d\n", yylineno, $2);
          } else {
+        	 /* Check whether the label has already been declared. */
+        	 if (get_value_at_index(labels, (unsigned int)$2) >= 0) {
+                 fprintf(stderr, "line %d: Warning: label %d has already been declared.\n",
+                    yylineno, $2);
+        	 }
+
              /* The casts are safe since both integers are strictly positive. */
              add_value_at_index(labels, (unsigned) prog_length, (unsigned) $2);
          }
@@ -185,6 +195,19 @@ static void print_load_error(int errno) {
 }
 
 /**
+ * Ends the program by checking if an error occurred and freeing the memory.
+ */
+int endprog(int status) {
+    if (status) {
+        print_load_error(status);
+    }
+    free_list(instructions);
+    free_array(labels);
+    yylex_destroy();
+    return status != 0;
+}
+
+/**
  * Loads the program into the VM code segment by reading instructions from a
  * file.
  * @param input The input file which contains instructions.
@@ -197,32 +220,26 @@ int loadprog(FILE *input) {
     
     labels = new_array();
     if (!labels) {
-        status = NOMEM_ERROR;
-        goto end;
+    	return endprog(NOMEM_ERROR);
     }
     yyin = input;
     status = yyparse();
     if (status == 1) {
-        status = SYNTAX_ERROR;
-        goto end;
+    	return endprog(SYNTAX_ERROR);
     } else if (status == 2) {
-        status = NOMEM_ERROR;
-        goto end;
+    	return endprog(NOMEM_ERROR);
     }
     if (nerr) {
-        status = nerr;
-        goto end;
+    	return endprog(nerr);
     }
     if (prog_length == 0) {
-        status = NOPROG_ERROR;
-        goto end;
+    	return endprog(NOPROG_ERROR);
     }
     /* The code segment (from vm.c). */
     prog = calloc(prog_length, sizeof(*prog));
     if (!prog) {
         perror("calloc");
-        status = NOMEM_ERROR;
-        goto end;
+    	return endprog(NOMEM_ERROR);
     }
     /*
      * Insertions into the list are done by prepending. It means that
@@ -233,7 +250,7 @@ int loadprog(FILE *input) {
      * The list traversal is done normally but the code is loaded into the code
      * segment in the reverse order.
      */
-    for (l = list, i = prog_length; l != NULL; l = l->next) {
+    for (l = instructions, i = prog_length; l != NULL; l = l->next) {
         if (l->instruction.has_arg) {
             switch (l->instruction.opcode) {
             case VM_CALL: case VM_JUMP: case VM_JUMPF:
@@ -242,7 +259,7 @@ int loadprog(FILE *input) {
                     status = NOLABEL_ERROR;
                     fprintf(stderr, "There does not exist a label %d\n",
                             l->instruction.arg);
-                    /* No goto here to discover other non-existant labels. */
+                    /* Continue to discover other non-existent labels. */
                 }
                 break;
             default:
@@ -253,12 +270,5 @@ int loadprog(FILE *input) {
         prog[--i] = l->instruction.opcode;
     }
     
-end:
-    if (status) {
-        print_load_error(status);
-    }
-    free_array(labels);
-    free_list(list);
-    yylex_destroy();
-    return status != 0;
+    return endprog(status);
 }
