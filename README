@@ -7,7 +7,7 @@ implementation of a dynamic array, in order to remove the hard coded
 100 label limit. Further, Wuthy Hay has performed improvements on the
 entire code base. Recently, Quentin Campos and Jefferson Mangue have
 modified the grammar to get rid of the 10000 LOC limit. In 2015,
-Céline Noël has further improved several element of the code, in
+Céline Noël has further improved several elements of the code, in
 particular in the management of the stack.
 
 Currently this software is maintained by Christophe Morvan and Éric Laporte.
