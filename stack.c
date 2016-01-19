@@ -16,7 +16,7 @@
  * <http://www.gnu.org/licenses/>.
  *
  *
- *  Authors: S. Lombardy, N. Bedon, C. Morvan, G. Fuhs, W. Hay
+ *  Authors: S. Lombardy, N. Bedon, C. Morvan, G. Fuhs, W. Hay, C. Noël.
  *
  *************************************************************************** */
 

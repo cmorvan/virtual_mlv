@@ -16,7 +16,8 @@
  * <http://www.gnu.org/licenses/>.
  *
  *
- *  Authors: S. Lombardy, N. Bedon, C. Morvan, W. Hay, Q. Campos, J. Mangue
+ *  Authors: S. Lombardy, N. Bedon, C. Morvan, W. Hay, Q. Campos, J. Mangue,
+ *  C. Noël.
  *
  *************************************************************************** */
 

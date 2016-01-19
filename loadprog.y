@@ -17,7 +17,7 @@
  *
  *
  *  Authors: S. Lombardy, N. Bedon, C. Morvan, G. Fuhs, W. Hay, Q. Campos,
- *           J. Mangue
+ *           J. Mangue, C. Noël.
  *
  *************************************************************************** */
 

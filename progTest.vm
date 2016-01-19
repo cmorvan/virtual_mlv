@@ -49,7 +49,7 @@
     HALT
     LABEL   3
     BASER
-    WRITE
+    WRITE         #--- Affichage de l'état du pointeur de base (2)
     SET     55
     WRITE
     RETURN

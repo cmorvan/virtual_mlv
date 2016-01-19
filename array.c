@@ -17,7 +17,7 @@
  * <http://www.gnu.org/licenses/>.
  *
  *
- *  Author: G. Fuhs, W. Hay, C. Morvan
+ *  Author: G. Fuhs, W. Hay, C. Morvan, C. Noël.
  *
  *************************************************************************** */
 
