@@ -1,10 +1,20 @@
 This software is a very simple implementation of a virtual (single stack) machine.
 
-It was originally written by Sylvain Lombardy at Université Paris-Est Marne-la-Vallée (UPEM). Afterwards, it has been modified by Nicolas Bedon and Christophe Morvan. Gaël Fuhs has contributed a nice implementation of a dynamic
-array, in order to remove the hard coded 100 label limit. Further, Wuthy Hay has performed improvements on the entire code base. Recently, Quentin Campos and Jefferson Mangue have modified the grammar to get rid of the 10000 LOC limit. in 2015, Céline Noël has further improved several element of the code, in particular in the management of the stack.
+It was originally written by Sylvain Lombardy at Université Paris-Est
+Marne-la-Vallée (UPEM). Afterwards, it has been modified by Nicolas
+Bedon and Christophe Morvan. Gaël Fuhs has contributed a nice
+implementation of a dynamic array, in order to remove the hard coded
+100 label limit. Further, Wuthy Hay has performed improvements on the
+entire code base. Recently, Quentin Campos and Jefferson Mangue have
+modified the grammar to get rid of the 10000 LOC limit. In 2015,
+Céline Noël has further improved several element of the code, in
+particular in the management of the stack.
 
 Currently this software is maintained by Christophe Morvan and Éric Laporte.
 
 http://www-igm.univ-mlv.fr/~cmorvan/index.php
 
-Most of the comments and documentation are written in French, and are intended for computer science students at Université Paris-Est Marne-la-Vallée. These software and documentation are provided under General Public Licence v3 (see COPYING).
+Most of the comments and documentation are written in French, and are
+intended for computer science students at Université Paris-Est
+Marne-la-Vallée. These software and documentation are provided under
+General Public Licence v3 (see COPYING).
