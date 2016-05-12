@@ -144,10 +144,11 @@ int pop(int *to) {
  * @return 0 upon success or 1 if an memory error occurs.
  */
 int extend_stack(int size) {
-	int required_cap = stack->size + size, new_size;
 	if (!stack && new_stack(size > INITIAL_CAPACITY ? size : INITIAL_CAPACITY)) {
 		return 1;
 	}
+
+	int required_cap = stack->size + size, new_size;
 
 	if (required_cap > stack->capacity) {
 		new_size = stack->capacity * 2;
