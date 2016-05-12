@@ -6,7 +6,7 @@
 \usepackage{amssymb}
 \usepackage{hyperref}
 
-\title{Machine virtuelle de l'université de Marne-la-Vallée}
+\title{Machine virtuelle de l'université Paris-Est Marne-la-Vallée}
 \author{Cours de compilation L3}
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -39,15 +39,16 @@
 \section{Introduction}
 
 Dans le cadre du cours de compilation du L3 informatique de
-l'université de Marne-la-Vallée, nous utiliserons une \emph{machine virtuelle}. Il s'agit d'une machine abstraite à pile.  Elle
+l'université Paris-Est Marne-la-Vallée, nous utiliserons une \emph{machine virtuelle}.
+Il s'agit d'une machine abstraite à registres.  Elle
 est composée de:
 \begin{itemize}
 \item un segment de code;
 \item une pile de données;
 \item deux registres de travail \texttt{reg1} et \texttt{reg2};
 \item un registre \texttt{base} qui pointe sur un emplacement
-  particulier de la pile (il est manipulé uniquement par la machine
-  lors des appels de fonction).
+  particulier de la pile et qui est manipulé uniquement par la machine
+  (lors des appels de fonction et des retours);
 \item un registre \texttt{counter} qui pointe sur un emplacement
   particulier du segment de code, c'est le compteur ordinal de la
   machine.
@@ -72,20 +73,20 @@ courante.
 
 \section{Langage de la machine virtuelle}
 Le langage de la machine virtuelle est très simple. Chaque ligne
-contient une commande et, éventuellement un
+contient une commande, et éventuellement un
 argument (entier) pour cette commande.
 Les commentaires sont introduits par \texttt{\#} et durent jusqu'à la
 fin de la ligne courante.
 
 Les commandes sans argument acceptées par la machine virtuelle sont
-représentés sur la Figure~\ref{fig:instruct}, celles possédant un
-argument, sur la Figure~\ref{fig:instructarg}
+représentés sur la Figure~\ref{fig:instruct}, et celles possédant un
+argument sur la Figure~\ref{fig:instructarg}.
 
 \begin{figure}
   \centering
   \begin{tabular}{lll}
     NOP   &:& Ne fait rien du tout\\
-    NEG   &:& \texttt{reg1}$\leftarrow-$\texttt{reg1}\\
+    NEG   &:& \texttt{reg1}$\leftarrow\neg$\texttt{reg1}\\
     ADD   &:& \texttt{reg1}$\leftarrow$\texttt{reg1}$+$\texttt{reg2}\\
     SUB   &:& \texttt{reg1}$\leftarrow$\texttt{reg1}$-$\texttt{reg2}\\
     MUL   &:& \texttt{reg1}$\leftarrow$\texttt{reg1}$*$\texttt{reg2}\\
@@ -130,7 +131,7 @@ argument, sur la Figure~\ref{fig:instructarg}
     &&& si \texttt{reg1} vaut $0$\\
     ALLOC &$n$&:& Effectue $n$ fois l'opération PUSH $0$ \\
     FREE  &$n$&:& Effectue $n$ fois l'opération POP, sans modifier la valeur du registre $1$\\
-    CALL  &$n$&:& Sauvegarde l'état de la machine dans la pile et effectue \\
+    CALL  &$n$&:& Sauvegarde dans la pile une partie de l'état de la machine et effectue \\
     &&& un branchement à l'emplacement du label $n$ dans le segment de code\\
   \end{tabular}
   \caption{Instructions avec argument}
@@ -154,11 +155,11 @@ retour de la fonction, et de \texttt{base}. À la suite de quoi,
 \texttt{base} est mis à jour pour pointer sur le sommet de la pile
 d'exécution
 qui correspondra au début de la zone dédiée à la fonction appelée.
-Attention, les registres ne sont pas automatiquement sauvegardés lors
+Attention, les autres registres ne sont pas automatiquement sauvegardés lors
 de l'appel d'une fonction.
 
 \texttt{RETURN} supprime la portion de pile dédiée à la fonction
-courante, dépile les valeurs empilées lors de l'appel de la fonction
+courante, y compris les valeurs empilées lors de l'appel de la fonction,
 et restaure \texttt{base} ainsi que le pointeur sur le segment de code.
 
 \section{Appel de fonction}
@@ -169,9 +170,9 @@ la pile d'exécution puis procéder à l'appel de la fonction. Leur
 adresse relative sera alors située entre $-n-2$ et $-3$, les
 emplacements d'adresse respective $-2$ et $-1$ étant occupés par les
 informations nécessaires à la restauration de \texttt{counter} et
-\texttt{base} lors du retour de la fonction.  La valeur de retour pourra
-elle être placée dans \texttt{reg1}. Une autre option peut être de lui
-réserver, par convention le premier espace de la pile.
+\texttt{base} lors du retour de la fonction.  La valeur de retour pourra,
+elle, être placée dans \texttt{reg1}. Une autre option peut être de lui
+réserver, par convention, le premier espace de la pile.
 
 %\newpage
 \section{Exemple}
@@ -218,14 +219,19 @@ Exemple de code accepté par la machine virtuelle:
 \section{Licence}
 
 Cette documentation est fournie avec la machine virtuelle
-\texttt{virtual\_mlv}. La machine virtuelle, comme la documentation
-est placée sous license GPL, v3. Les auteurs en sont: Nicolas Bedon,
+\texttt{virtual\_mlv}. La machine virtuelle et la documentation
+sont placées sous licence GPL, v3. Ses auteurs sont Nicolas Bedon,
 Quentin Campos, Gaël Fuhs, Wuthy Hay, Sylvain Lombardy, Jefferson
 Mangue, Christophe Morvan et Céline Noël.
 
-Le code est disponible à l'adresse suivante :
-\texttt{https://github.com/cmorvan/virtual\_mlv}
+Le code est disponible à l'adresse \texttt{https://github.com/cmorvan/virtual\_mlv}.
 
+Quand on invoque la machine virtuelle avec l'option \texttt{-debug}, elle affiche
+le segment de code puis l'exécute instruction par instruction au fur et à mesure
+que l'utilisateur appuie sur la touche Entrée. Après chaque instruction, elle
+affiche le contenu de la pile de données.
+
+Avec l'option  \texttt{-help}, elle imprime les options disponibles.
 \end{document}
 
 
