@@ -1,7 +1,7 @@
 This software is a very simple implementation of a virtual (single stack) machine.
 
 It was originally written by Sylvain Lombardy at Université Paris-Est
-Marne-la-Vallée (UPEM). Afterwards, it has been modified by Nicolas
+Marne-la-Vallée (Now Université Gustave Eiffel). Afterwards, it has been modified by Nicolas
 Bedon and Christophe Morvan. Gaël Fuhs has contributed a nice
 implementation of a dynamic array, in order to remove the hard coded
 100 label limit. Further, Wuthy Hay has performed improvements on the
